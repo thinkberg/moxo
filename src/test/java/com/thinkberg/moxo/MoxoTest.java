@@ -2,7 +2,6 @@ package com.thinkberg.moxo;
 
 import com.thinkberg.moxo.dav.DavLockManagerTest;
 import com.thinkberg.moxo.dav.DavResourceTest;
-import com.thinkberg.moxo.s3.S3WrapperTest;
 import com.thinkberg.moxo.vfs.S3FileNameTest;
 import com.thinkberg.moxo.vfs.S3FileProviderTest;
 import junit.framework.Test;
@@ -41,8 +40,6 @@ public class MoxoTest extends TestCase {
 
     String bucketId = properties.getStringProperty("bucket", null);
     if (null != bucketId) {
-      s.addTestSuite(S3WrapperTest.class);
-
       s.addTestSuite(S3FileNameTest.class);
       s.addTestSuite(S3FileProviderTest.class);
     }

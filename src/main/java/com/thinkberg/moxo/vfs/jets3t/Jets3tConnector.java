@@ -14,34 +14,33 @@
  * limitations under the License.
  */
 
-package com.thinkberg.moxo.s3;
+package com.thinkberg.moxo.vfs.jets3t;
 
-import org.apache.commons.vfs.FileSystemException;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
-import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.security.AWSCredentials;
 
 /**
  * @author Matthias L. Jugel
  */
-public class S3Connector {
+public class Jets3tConnector {
   private static final String APPLICATION_DESCRIPTION = "S3 VFS Connector/1.0";
 
-  private static S3Connector instance;
+  private static Jets3tConnector instance;
 
   /**
-   * Get an instance of the S3Connector which is initialized and authenticated to the
+   * Get an instance of the Jets3tConnector which is initialized and authenticated to the
    * Amazon S3 Service.
    *
-   * @return an S3 connector
-   * @throws FileSystemException if connection or authentication fails
+   * @return a Jets3t S3 connector
+   * @throws org.jets3t.service.S3ServiceException
+   *          if connection or authentication fails
    */
-  public static S3Connector getInstance() throws FileSystemException {
+  public static Jets3tConnector getInstance() throws S3ServiceException {
     if (null == instance) {
-      instance = new S3Connector();
+      instance = new Jets3tConnector();
     }
     return instance;
   }
@@ -51,14 +50,16 @@ public class S3Connector {
   /**
    * Initialize Amazon S3.
    *
-   * @throws FileSystemException if S3 can't be initialized
+   * @throws org.jets3t.service.S3ServiceException
+   *          if the service cannot be accessed
    */
-  private S3Connector() throws FileSystemException {
+  private Jets3tConnector() throws S3ServiceException {
+    System.err.print("Authenticated to Amazon S3: ");
     String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
     Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
 
     if (!properties.isLoaded()) {
-      throw new FileSystemException("can't find S3 configuration: " + propertiesFileName);
+      throw new S3ServiceException("can't find S3 configuration: " + propertiesFileName);
     }
 
     AWSCredentials awsCredentials = new AWSCredentials(
@@ -66,28 +67,11 @@ public class S3Connector {
             properties.getStringProperty("secretkey", null));
 
 
-    try {
-      service = new RestS3Service(awsCredentials, APPLICATION_DESCRIPTION, null);
-    } catch (S3ServiceException e) {
-      throw new FileSystemException("can't initialize S3 Service", e);
-    }
+    service = new RestS3Service(awsCredentials, APPLICATION_DESCRIPTION, null);
+    System.err.println("OK");
   }
 
-  /**
-   * Get a virtual file system root corresponding to a bucket.
-   *
-   * @param bucket the bucket that contains the filesystem
-   * @return the S3 root
-   * @throws FileSystemException if the bucket is not found
-   */
-  public S3VfsRoot getRoot(String bucket) throws FileSystemException {
-    try {
-      if (service.isBucketAccessible(bucket)) {
-        return new S3VfsRootImpl(service, new S3Bucket(bucket));
-      }
-      throw new FileSystemException("vsf.provider.vfs/cant-access.error");
-    } catch (S3ServiceException e) {
-      throw new FileSystemException(e);
-    }
+  public S3Service getService() {
+    return service;
   }
 }

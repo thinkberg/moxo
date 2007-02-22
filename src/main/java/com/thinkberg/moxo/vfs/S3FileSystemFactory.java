@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package com.thinkberg.moxo.s3;
+package com.thinkberg.moxo.vfs;
 
+import com.thinkberg.moxo.vfs.jets3t.Jets3tFileSystem;
+import org.apache.commons.vfs.FileSystem;
 import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileSystemOptions;
 
 /**
- * Virtual Root of an S3 file system. Implement this interface to be able to get
- * objects from Amazon S3. The root should be bound to a bucket that contains the
- * virtual file system. All calls to S3VfsRoot#getObject should return a virtual
- * object within this file system.
- *
  * @author Matthias L. Jugel
  */
-public interface S3VfsRoot {
-  /**
-   * Get a file object relative to this S3 root. A roo
-   *
-   * @param path the path of the file (the absolute path)
-   * @return the virtual S3 file object
-   * @throws FileSystemException if the object cannot be accessed
-   */
-  public S3VfsObject getObject(String path) throws FileSystemException;
+public class S3FileSystemFactory {
+  public static FileSystem getFileSystem(S3FileName fileName, FileSystemOptions fileSystemOptions) throws FileSystemException {
+    // TODO load dynamically
+    return new Jets3tFileSystem(fileName, fileSystemOptions);
+  }
 }

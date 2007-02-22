@@ -66,8 +66,10 @@ public class PutHandler extends WebdavHandler {
 
     InputStream is = request.getInputStream();
     OutputStream os = object.getContent().getOutputStream();
-    log("copied " + Util.copyStream(is, os) + " bytes");
-    os.close();
+    log("PUT sends " + request.getHeader("Content-length") + " bytes");
+    log("PUT copied " + Util.copyStream(is, os) + " bytes");
+    os.flush();
+    object.close();
 
     response.setStatus(HttpServletResponse.SC_CREATED);
   }

@@ -41,7 +41,7 @@ public class Util {
 
 
   public static int copyStream(InputStream is, OutputStream os) throws IOException {
-    byte[] buffer = new byte[4096];
+    byte[] buffer = new byte[8192];
     int bytesRead, bytesCount = 0;
     while ((bytesRead = is.read(buffer)) != -1) {
       os.write(buffer, 0, bytesRead);

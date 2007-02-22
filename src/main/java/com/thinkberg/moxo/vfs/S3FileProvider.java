@@ -16,8 +16,6 @@
 
 package com.thinkberg.moxo.vfs;
 
-import com.thinkberg.moxo.s3.S3Connector;
-import com.thinkberg.moxo.s3.S3VfsRoot;
 import org.apache.commons.vfs.Capability;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileSystem;
@@ -30,31 +28,29 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
+ * An S3 file provider. Create an S3 file system out of an S3 file name.
+ * Also defines the capabilities of the file system.
+ *
  * @author Matthias L. Jugel
  */
 public class S3FileProvider extends AbstractOriginatingFileProvider {
 
   public final static Collection capabilities = Collections.unmodifiableCollection(Arrays.asList(
-/*
           Capability.CREATE,
           Capability.DELETE,
           Capability.RENAME,
-*/
-Capability.GET_TYPE,
-Capability.GET_LAST_MODIFIED,
-/*
+          Capability.GET_TYPE,
+          Capability.GET_LAST_MODIFIED,
           Capability.SET_LAST_MODIFIED_FILE,
           Capability.SET_LAST_MODIFIED_FOLDER,
-*/
-Capability.LIST_CHILDREN,
-Capability.READ_CONTENT,
-Capability.URI/*,
-
+          Capability.LIST_CHILDREN,
+          Capability.READ_CONTENT,
+          Capability.URI,
           Capability.WRITE_CONTENT,
-          Capability.APPEND_CONTENT,
+          Capability.APPEND_CONTENT/*,
           Capability.RANDOM_ACCESS_READ,
-          Capability.RANDOM_ACCESS_WRITE
-*/
+          Capability.RANDOM_ACCESS_WRITE*/
+
   ));
 
 
@@ -63,13 +59,23 @@ Capability.URI/*,
     setFileNameParser(S3FileNameParser.getInstance());
   }
 
+  /**
+   * Create a file system with the S3 root provided.
+   *
+   * @param fileName          the S3 file name that defines the root (bucket)
+   * @param fileSystemOptions file system options
+   * @return an S3 file system
+   * @throws FileSystemException if te file system cannot be created
+   */
   protected FileSystem doCreateFileSystem(FileName fileName, FileSystemOptions fileSystemOptions) throws FileSystemException {
-    S3FileName s3FileName = (S3FileName) fileName;
-    String s3BucketId = s3FileName.getRootFile();
-    S3VfsRoot s3VfsRoot = S3Connector.getInstance().getRoot(s3BucketId);
-    return new S3FileSystem(s3FileName, fileSystemOptions, s3VfsRoot);
+    return S3FileSystemFactory.getFileSystem((S3FileName) fileName, fileSystemOptions);
   }
 
+  /**
+   * Get the capabilities of the file system provider.
+   *
+   * @return the file system capabilities
+   */
   public Collection getCapabilities() {
     return capabilities;
   }

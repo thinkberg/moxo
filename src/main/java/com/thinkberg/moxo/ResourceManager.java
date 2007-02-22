@@ -39,7 +39,7 @@ public class ResourceManager {
       root = fsm.createVirtualFileSystem(rootObject);
       System.err.println("Created virtual file system: " + rootObject);
     } catch (FileSystemException e) {
-      System.err.println("Can't create virtual filesystem: " + e.getMessage());
+      System.err.println("Can't create virtual file system: " + e.getMessage());
       e.printStackTrace();
     }
   }

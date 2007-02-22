@@ -14,28 +14,43 @@
  * limitations under the License.
  */
 
-package com.thinkberg.moxo.vfs;
+package com.thinkberg.moxo.vfs.jets3t;
 
-import com.thinkberg.moxo.s3.S3VfsRoot;
+import com.thinkberg.moxo.vfs.S3FileName;
+import com.thinkberg.moxo.vfs.S3FileProvider;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystem;
+import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemOptions;
 import org.apache.commons.vfs.provider.AbstractFileSystem;
+import org.jets3t.service.S3Service;
+import org.jets3t.service.S3ServiceException;
+import org.jets3t.service.model.S3Bucket;
 
 import java.util.Collection;
 
-
 /**
+ * An S3 file system.
+ *
  * @author Matthias L. Jugel
  */
-public class S3FileSystem extends AbstractFileSystem implements FileSystem {
-  private final S3VfsRoot s3VfsRoot;
+public class Jets3tFileSystem extends AbstractFileSystem {
+  private S3Service service;
+  private S3Bucket bucket;
 
-  @SuppressWarnings({"WeakerAccess"})
-  protected S3FileSystem(S3FileName fileName, FileSystemOptions fileSystemOptions, S3VfsRoot s3VfsRoot) {
+  public Jets3tFileSystem(S3FileName fileName, FileSystemOptions fileSystemOptions) throws FileSystemException {
     super(fileName, null, fileSystemOptions);
-    this.s3VfsRoot = s3VfsRoot;
+    String bucketId = fileName.getRootFile();
+    try {
+      service = Jets3tConnector.getInstance().getService();
+      bucket = new S3Bucket(bucketId);
+      if (!service.isBucketAccessible(bucketId)) {
+        bucket = service.createBucket(bucketId);
+      }
+      System.err.println("Created new S3 FileSystem: " + bucketId);
+    } catch (S3ServiceException e) {
+      throw new FileSystemException(e);
+    }
   }
 
   @SuppressWarnings({"unchecked"})
@@ -44,7 +59,6 @@ public class S3FileSystem extends AbstractFileSystem implements FileSystem {
   }
 
   protected FileObject createFile(FileName fileName) throws Exception {
-    return new S3FileObject(fileName, this, s3VfsRoot.getObject(fileName.getPathDecoded()));
+    return new Jets3tFileObject(fileName, this, service, bucket);
   }
-
 }

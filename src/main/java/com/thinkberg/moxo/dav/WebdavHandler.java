@@ -120,7 +120,7 @@ public abstract class WebdavHandler {
    *
    * @param request the servlet request
    * @return the file object of the destination
-   * @throws FileSystemException   if the filesystem cannot create a file object
+   * @throws FileSystemException   if the file system cannot create a file object
    * @throws MalformedURLException if the url is misformatted
    */
   FileObject getDestination(HttpServletRequest request) throws FileSystemException, MalformedURLException {
