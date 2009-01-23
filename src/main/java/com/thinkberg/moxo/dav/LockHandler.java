@@ -16,22 +16,21 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.Lock;
 import com.thinkberg.moxo.dav.lock.LockConflictException;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Node;
+import org.dom4j.*;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
@@ -43,6 +42,8 @@ import java.util.Iterator;
  * @version $Id$
  */
 public class LockHandler extends WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(LockHandler.class);
+
   private static final String TAG_LOCKSCOPE = "lockscope";
   private static final String TAG_LOCKTYPE = "locktype";
   private static final String TAG_OWNER = "owner";
@@ -53,7 +54,7 @@ public class LockHandler extends WebdavHandler {
   private static final String HEADER_LOCK_TOKEN = "Lock-Token";
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     try {
       Lock lock = LockManager.getInstance().checkCondition(object, getIf(request));
@@ -91,7 +92,7 @@ public class LockHandler extends WebdavHandler {
         }
       }
 
-      log("LOCK(" + lockType + ", " + lockScope + ", " + owner + ")");
+      LOG.debug("LOCK(" + lockType + ", " + lockScope + ", " + owner + ")");
 
       Lock requestedLock = new Lock(object, lockType, lockScope, owner, getDepth(request), getTimeout(request));
       try {
@@ -109,6 +110,9 @@ public class LockHandler extends WebdavHandler {
   }
 
   private void sendLockAcquiredResponse(HttpServletResponse response, Lock lock) throws IOException {
+    if (!lock.getObject().exists()) {
+      response.setStatus(SC_CREATED);
+    }
     response.setContentType("text/xml");
     response.setCharacterEncoding("UTF-8");
     response.setHeader(HEADER_LOCK_TOKEN, "<" + lock.getToken() + ">");
@@ -121,6 +125,18 @@ public class LockHandler extends WebdavHandler {
 
     XMLWriter xmlWriter = new XMLWriter(response.getWriter());
     xmlWriter.write(propDoc);
-    log(propDoc);
+
+    logXml(propDoc);
+  }
+
+  private void logXml(Node element) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());
+      xmlWriter.write(element);
+      LOG.debug(bos.toString());
+    } catch (IOException e) {
+      LOG.debug("ERROR writing XML log: " + e.getMessage());
+    }
   }
 }

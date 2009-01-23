@@ -35,7 +35,6 @@ public abstract class AbstractDavResource {
   private static final String TAG_PROP = "prop";
   private static final String TAG_STATUS = "status";
 
-  @SuppressWarnings({"UnusedReturnValue"})
   public Element serializeToXml(Element root, List<String> requestedProperties) {
     Element propStatEl = root.addElement(TAG_PROPSTAT);
     Element propEl = propStatEl.addElement(TAG_PROP);
@@ -61,5 +60,6 @@ public abstract class AbstractDavResource {
     return root;
   }
 
+  @SuppressWarnings({"BooleanMethodIsAlwaysInverted"})
   protected abstract boolean addPropertyValue(Element root, String propertyName);
 }

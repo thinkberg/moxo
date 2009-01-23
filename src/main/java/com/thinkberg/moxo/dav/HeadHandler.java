@@ -16,7 +16,6 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 
@@ -31,7 +30,7 @@ import java.io.IOException;
 public class HeadHandler extends GetHandler {
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     if (object.exists()) {
       if (FileType.FOLDER.equals(object.getType())) {

@@ -16,20 +16,10 @@
 
 package com.thinkberg.moxo.servlet;
 
-import com.thinkberg.moxo.dav.CopyHandler;
-import com.thinkberg.moxo.dav.DeleteHandler;
-import com.thinkberg.moxo.dav.GetHandler;
-import com.thinkberg.moxo.dav.HeadHandler;
-import com.thinkberg.moxo.dav.LockHandler;
-import com.thinkberg.moxo.dav.MkColHandler;
-import com.thinkberg.moxo.dav.MoveHandler;
-import com.thinkberg.moxo.dav.OptionsHandler;
-import com.thinkberg.moxo.dav.PostHandler;
-import com.thinkberg.moxo.dav.PropFindHandler;
-import com.thinkberg.moxo.dav.PropPatchHandler;
-import com.thinkberg.moxo.dav.PutHandler;
-import com.thinkberg.moxo.dav.UnlockHandler;
-import com.thinkberg.moxo.dav.WebdavHandler;
+import com.thinkberg.moxo.dav.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs.FileObject;
 import org.mortbay.jetty.Response;
 
 import javax.servlet.ServletException;
@@ -44,10 +34,13 @@ import java.util.Map;
  * @author Matthias L. Jugel
  * @version $Id$
  */
-public class MoxoS3WebdavServlet extends HttpServlet {
-  private final Map<String, WebdavHandler> handlers = new HashMap<String, WebdavHandler>();
+public class MoxoWebDAVServlet extends HttpServlet {
+  private static final Log LOG = LogFactory.getLog(MoxoWebDAVServlet.class);
 
-  public MoxoS3WebdavServlet() {
+  private final Map<String, WebdavHandler> handlers = new HashMap<String, WebdavHandler>();
+  private FileObject fileSystemRoot = null;
+
+  public MoxoWebDAVServlet() {
     handlers.put("COPY", new CopyHandler());
     handlers.put("DELETE", new DeleteHandler());
     handlers.put("GET", new GetHandler());
@@ -61,18 +54,35 @@ public class MoxoS3WebdavServlet extends HttpServlet {
     handlers.put("PROPPATCH", new PropPatchHandler());
     handlers.put("PUT", new PutHandler());
     handlers.put("UNLOCK", new UnlockHandler());
+  }
 
-    for (WebdavHandler handler : handlers.values()) {
-      handler.setServlet(this);
-    }
+  protected FileObject getFileSystemRoot() {
+    return fileSystemRoot;
   }
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//    String auth = request.getHeader("Authorization");
+//    String login = "", password = "";
+//
+//    if (auth != null) {
+//      auth = new String(Base64.decodeBase64(auth.substring(auth.indexOf(' ') + 1).getBytes()));
+//      login = auth.substring(0, auth.indexOf(':'));
+//      password = auth.substring(auth.indexOf(':') + 1);
+//    }
+//
+//    AWSCredentials credentials = AWSCredentials.load(password,  ))
+//    if (user == null) {
+//      response.setHeader("WWW-Authenticate", "Basic realm=\"Moxo\"");
+//      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//      return;
+//    }
+
+
     String method = request.getMethod();
-    log(">> " + request.getMethod() + " " + request.getPathInfo());
     if (request.getHeader("X-Litmus") != null) {
-      log("!! " + request.getHeader("X-Litmus"));
+      LOG.info(String.format("WebDAV Litmus Test: %s", request.getHeader("X-Litmus")));
     }
+    LOG.debug(String.format(">> %s %s", request.getMethod(), request.getPathInfo()));
     if (handlers.containsKey(method)) {
       handlers.get(method).service(request, response);
     } else {
@@ -80,6 +90,6 @@ public class MoxoS3WebdavServlet extends HttpServlet {
     }
     Response jettyResponse = ((Response) response);
     String reason = jettyResponse.getReason();
-    log("<< " + jettyResponse.getStatus() + (reason != null ? ": " + reason : ""));
+    LOG.debug(String.format("<< %s (%b%s)", request.getMethod(), jettyResponse.getStatus(), reason != null ? ": " + reason : ""));
   }
 }

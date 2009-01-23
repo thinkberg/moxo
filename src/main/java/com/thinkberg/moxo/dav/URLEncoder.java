@@ -26,7 +26,7 @@ import java.util.BitSet;
  */
 class URLEncoder {
 
-  private static BitSet keepPlain;
+  private static final BitSet keepPlain;
 
   static {
     keepPlain = new BitSet(256);
@@ -50,7 +50,6 @@ class URLEncoder {
   }
 
 
-  @SuppressWarnings({"SameParameterValue"})
   public static String encode(String s, String enc) throws UnsupportedEncodingException {
     byte[] buf = s.getBytes(enc);
     StringBuffer result = new StringBuffer();

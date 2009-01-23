@@ -72,7 +72,6 @@ public class Lock {
     return depth;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   public String getDepthValue() {
     switch (depth) {
       case 0:
@@ -84,7 +83,6 @@ public class Lock {
     }
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   public String getTimeout() {
     if (timeout == -1) {
       return "Infinity";
@@ -103,7 +101,6 @@ public class Lock {
    * @param root the root element to add the activelock to
    * @return the root element
    */
-  @SuppressWarnings({"UnusedReturnValue"})
   public Element serializeToXml(Element root) {
     Element activelockEl = root.addElement("activelock");
     activelockEl.addElement("locktype").addElement(getType());
@@ -130,7 +127,7 @@ public class Lock {
    * @return whether this lock is for the same file object
    */
   public boolean equals(Object other) {
-    return object.equals(((Lock) other).object);
+    return other instanceof Lock && object.equals(((Lock) other).object);
   }
 
 

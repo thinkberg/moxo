@@ -30,7 +30,6 @@ import java.util.List;
  * @author Matthias L. Jugel
  * @version $Id$
  */
-@SuppressWarnings({"SameReturnValue"})
 public class DavResource extends AbstractDavResource {
 
   // @see http://www.webdav.org/specs/rfc2518.html#dav.properties
@@ -64,11 +63,12 @@ public class DavResource extends AbstractDavResource {
           PROP_LOCK_DISCOVERY,
           PROP_RESOURCETYPE,
           PROP_SOURCE,
-          PROP_SUPPORTED_LOCK
+          PROP_SUPPORTED_LOCK,
+          PROP_QUOTA_AVAILABLE_BYTES
   );
 
-  private final FileObject object;
-  private boolean ignoreValues = false;
+  protected final FileObject object;
+  protected boolean ignoreValues = false;
 
   public DavResource(FileObject object) {
     this(object, false);
@@ -138,12 +138,10 @@ public class DavResource extends AbstractDavResource {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess", "UnusedParameters"})
   protected boolean addCreationDateProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addGetDisplayNameProperty(Element root) {
     Element el = root.addElement(PROP_DISPLAY_NAME);
     if (!ignoreValues) {
@@ -152,12 +150,10 @@ public class DavResource extends AbstractDavResource {
     return true;
   }
 
-  @SuppressWarnings({"WeakerAccess", "UnusedParameters"})
   protected boolean addGetContentLanguageProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addGetContentLengthProperty(Element root) {
     try {
       Element el = root.addElement(PROP_GET_CONTENT_LENGTH);
@@ -171,7 +167,6 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addGetContentTypeProperty(Element root) {
     try {
       String contentType = object.getContent().getContentInfo().getContentType();
@@ -190,12 +185,10 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  @SuppressWarnings({"WeakerAccess", "UnusedParameters"})
   protected boolean addGetETagProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addGetLastModifiedProperty(Element root) {
     try {
       Element el = root.addElement(PROP_GET_LAST_MODIFIED);
@@ -209,7 +202,6 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addLockDiscoveryProperty(Element root) {
     Element lockdiscoveryEl = root.addElement(PROP_LOCK_DISCOVERY);
     try {
@@ -229,18 +221,15 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addResourceTypeProperty(Element root) {
     root.addElement(PROP_RESOURCETYPE);
     return true;
   }
 
-  @SuppressWarnings({"WeakerAccess", "UnusedParameters"})
   protected boolean addSourceProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addSupportedLockProperty(Element root) {
     Element supportedlockEl = root.addElement(PROP_SUPPORTED_LOCK);
     if (!ignoreValues) {
@@ -255,22 +244,18 @@ public class DavResource extends AbstractDavResource {
     return true;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addQuotaProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addQuotaUsedProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addQuotaAvailableBytesProperty(Element root) {
     return false;
   }
 
-  @SuppressWarnings({"WeakerAccess"})
   protected boolean addQuotaUsedBytesProperty(Element root) {
     return false;
   }

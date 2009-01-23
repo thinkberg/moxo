@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.thinkberg.moxo;
+package com.thinkberg.moxo.vfs;
 
 import junit.framework.TestCase;
 import org.jets3t.service.Jets3tProperties;
@@ -23,15 +23,11 @@ import org.jets3t.service.Jets3tProperties;
  * @author Matthias L. Jugel
  */
 public class S3TestCase extends TestCase {
-  protected final static String BUCKETID;
   protected static final String ROOT;
 
   static {
     String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
     Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
-
-    BUCKETID = properties.getStringProperty("bucket", null);
-    ROOT = "s3://" + BUCKETID;
-
+    ROOT = properties.getStringProperty("vfs.url", "ram:/");
   }
 }

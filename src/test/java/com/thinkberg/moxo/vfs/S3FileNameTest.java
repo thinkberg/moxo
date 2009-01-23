@@ -16,20 +16,20 @@
 
 package com.thinkberg.moxo.vfs;
 
-import junit.framework.TestCase;
-import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileName;
-import org.jets3t.service.Jets3tProperties;
-import com.thinkberg.moxo.S3TestCase;
+import org.apache.commons.vfs.FileSystemException;
+
+import java.net.URI;
 
 /**
  * @author Matthias L. Jugel
  */
 public class S3FileNameTest extends S3TestCase {
   public void testGetBucketFromUri() throws FileSystemException {
-    String uri = ROOT + "/junk.txt";
-    FileName fileName = S3FileNameParser.getInstance().parseUri(null, null, uri);
-    assertEquals(BUCKETID, ((S3FileName)fileName).getRootFile());
+    String uriString = ROOT + "/junk.txt";
+    String bucketId = URI.create(uriString).getHost();
+    FileName fileName = S3FileNameParser.getInstance().parseUri(null, null, uriString);
+    assertEquals(bucketId, ((S3FileName) fileName).getRootFile());
   }
 
   public void testGetRootFolderFromUri() throws FileSystemException {

@@ -16,10 +16,11 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.data.DavResource;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -42,8 +43,10 @@ import java.util.List;
  * @author Matthias L. Jugel
  */
 public class PropPatchHandler extends WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(PropPatchHandler.class);
+
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     try {
       LockManager.getInstance().checkCondition(object, getIf(request));
@@ -71,7 +74,7 @@ public class PropPatchHandler extends WebdavHandler {
         Element responseEl = multiStatusResponse.addElement("response");
         try {
           URL url = new URL(getBaseUrl(request), URLEncoder.encode(object.getName().getPath(), "UTF-8"));
-          log("!! " + url);
+          LOG.debug(url);
           responseEl.addElement("href").addText(url.toExternalForm());
         } catch (Exception e) {
           e.printStackTrace();
@@ -103,11 +106,11 @@ public class PropPatchHandler extends WebdavHandler {
         writer.flush();
         writer.close();
       } else {
-        log("!! " + object.getName().getPath() + " NOT FOUND");
+        LOG.error(object.getName().getPath() + " NOT FOUND");
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
       }
     } catch (DocumentException e) {
-      log("!! inavlid request: " + e.getMessage());
+      LOG.error("invalid request: " + e.getMessage());
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
     }
   }

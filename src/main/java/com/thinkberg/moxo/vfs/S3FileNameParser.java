@@ -37,7 +37,6 @@ public class S3FileNameParser extends AbstractFileNameParser {
 
   }
 
-
   public FileName parseUri(final VfsComponentContext context, final FileName base, final String filename) throws FileSystemException {
     StringBuffer name = new StringBuffer();
 

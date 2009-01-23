@@ -16,11 +16,7 @@
 
 package com.thinkberg.moxo;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -41,7 +37,6 @@ import java.util.jar.JarInputStream;
 public class Main {
   private final static URL location = Main.class.getProtectionDomain().getCodeSource().getLocation();
 
-  @SuppressWarnings({"RedundantArrayCreation"})
   public static void main(String args[])
           throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -63,6 +58,7 @@ public class Main {
     }
 
     Class mainClass = classLoader.loadClass("com.thinkberg.moxo.MoxoJettyRunner");
+    @SuppressWarnings({"RedundantArrayCreation"})
     final Method main = mainClass.getDeclaredMethod("main", new Class[]{String[].class});
     main.invoke(null, new Object[]{args});
   }
@@ -72,6 +68,7 @@ public class Main {
    *
    * @return the classpath
    */
+  @SuppressWarnings({"ConstantConditions"})
   private static URL[] initClassPath() {
     List<URL> urlArray = new ArrayList<URL>();
     InputStream manifestIn = null;
@@ -112,7 +109,7 @@ public class Main {
         // ignore errors
       }
     }
-    return urlArray.toArray(new URL[0]);
+    return urlArray.toArray(new URL[urlArray.size()]);
   }
 
   /**

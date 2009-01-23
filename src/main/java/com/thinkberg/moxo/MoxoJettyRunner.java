@@ -40,7 +40,7 @@ public class MoxoJettyRunner {
 
     try {
       Server server = new Server();
-      XmlConfiguration xmlConfiguration = new XmlConfiguration(getResource(CONF_JETTY_XML));
+      XmlConfiguration xmlConfiguration = new XmlConfiguration(getXmlConfigurationUrl());
       xmlConfiguration.configure(server);
       server.start();
       server.join();
@@ -50,12 +50,11 @@ public class MoxoJettyRunner {
     }
   }
 
-  @SuppressWarnings({"SameParameterValue"})
-  private static URL getResource(String resource) {
-    URL url = MoxoJettyRunner.class.getResource("/" + resource);
+  private static URL getXmlConfigurationUrl() {
+    URL url = MoxoJettyRunner.class.getResource("/" + MoxoJettyRunner.CONF_JETTY_XML);
     if (null == url) {
       try {
-        url = new File(resource).toURL();
+        url = new File(MoxoJettyRunner.CONF_JETTY_XML).toURL();
         System.err.println("Loading configuration from file: " + url.toExternalForm());
       } catch (MalformedURLException e) {
         // ignore ...

@@ -23,7 +23,6 @@ import org.apache.commons.vfs.provider.local.LocalFileName;
  * @author Matthias L. Jugel
  */
 public class S3FileName extends LocalFileName {
-  @SuppressWarnings({"WeakerAccess"})
   protected S3FileName(final String scheme, final String rootFile, final String path, final FileType type) {
     super(scheme, rootFile, path, type);
   }

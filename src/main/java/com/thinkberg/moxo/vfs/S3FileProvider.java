@@ -16,11 +16,7 @@
 
 package com.thinkberg.moxo.vfs;
 
-import org.apache.commons.vfs.Capability;
-import org.apache.commons.vfs.FileName;
-import org.apache.commons.vfs.FileSystem;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemOptions;
+import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.AbstractOriginatingFileProvider;
 
 import java.util.Arrays;
@@ -35,7 +31,7 @@ import java.util.Collections;
  */
 public class S3FileProvider extends AbstractOriginatingFileProvider {
 
-  public final static Collection capabilities = Collections.unmodifiableCollection(Arrays.asList(
+  public final static Collection<Capability> capabilities = Collections.unmodifiableCollection(Arrays.asList(
           Capability.CREATE,
           Capability.DELETE,
           Capability.RENAME,
@@ -52,7 +48,6 @@ public class S3FileProvider extends AbstractOriginatingFileProvider {
           Capability.RANDOM_ACCESS_WRITE*/
 
   ));
-
 
   public S3FileProvider() {
     super();

@@ -16,7 +16,6 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
 import org.apache.commons.vfs.FileObject;
@@ -35,7 +34,7 @@ public abstract class CopyMoveBase extends WebdavHandler {
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     boolean overwrite = getOverwrite(request);
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
     FileObject targetObject = getDestination(request);
 
     try {

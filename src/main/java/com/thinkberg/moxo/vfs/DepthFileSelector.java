@@ -47,7 +47,6 @@ public class DepthFileSelector implements FileSelector {
     this(0, depth);
   }
 
-  @SuppressWarnings({"SameParameterValue"})
   public DepthFileSelector(int min, int max) {
     minDepth = min;
     maxDepth = max;

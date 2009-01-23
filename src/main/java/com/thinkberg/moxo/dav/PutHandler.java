@@ -16,9 +16,10 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 
@@ -33,8 +34,10 @@ import java.io.OutputStream;
  * @version $Id$
  */
 public class PutHandler extends WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(PutHandler.class);
+
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     try {
       LockManager.getInstance().checkCondition(object, getIf(request));
@@ -66,8 +69,8 @@ public class PutHandler extends WebdavHandler {
 
     InputStream is = request.getInputStream();
     OutputStream os = object.getContent().getOutputStream();
-    log("PUT sends " + request.getHeader("Content-length") + " bytes");
-    log("PUT copied " + Util.copyStream(is, os) + " bytes");
+    int bytesCopied = Util.copyStream(is, os);
+    LOG.debug("sending " + bytesCopied + "/" + request.getHeader("Content-length") + " bytes");
     os.flush();
     object.close();
 

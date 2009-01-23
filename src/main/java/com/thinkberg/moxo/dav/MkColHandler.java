@@ -16,7 +16,6 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
 import org.apache.commons.vfs.FileObject;
@@ -25,6 +24,7 @@ import org.apache.commons.vfs.FileType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
@@ -34,12 +34,14 @@ import java.io.IOException;
 public class MkColHandler extends WebdavHandler {
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    if (request.getReader().readLine() != null) {
+    BufferedReader bufferedReader = request.getReader();
+    String line = bufferedReader.readLine();
+    if (line != null) {
       response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
       return;
     }
 
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     try {
       LockManager.getInstance().checkCondition(object, getIf(request));

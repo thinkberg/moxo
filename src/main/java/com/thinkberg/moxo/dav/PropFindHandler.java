@@ -16,22 +16,21 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.data.DavResource;
 import com.thinkberg.moxo.dav.data.DavResourceFactory;
 import com.thinkberg.moxo.vfs.DepthFileSelector;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+import org.dom4j.*;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,12 +47,26 @@ public class PropFindHandler extends WebdavHandler {
   private static final String TAG_MULTISTATUS = "multistatus";
   private static final String TAG_HREF = "href";
   private static final String TAG_RESPONSE = "response";
+  private static final Log LOG = LogFactory.getLog(PropFindHandler.class);
+
+  void logXml(Node element) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());
+      xmlWriter.write(element);
+      LOG.debug(bos.toString());
+    } catch (IOException e) {
+      LOG.error(e.getMessage());
+    }
+  }
+
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     SAXReader saxReader = new SAXReader();
     try {
       Document propDoc = saxReader.read(request.getInputStream());
-      // log(propDoc);
+      logXml(propDoc);
+
       Element propFindEl = propDoc.getRootElement();
       Element propEl = (Element) propFindEl.elementIterator().next();
       String propElName = propEl.getName();
@@ -71,7 +84,7 @@ public class PropFindHandler extends WebdavHandler {
         ignoreValues = true;
       }
 
-      FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+      FileObject object = getVFSObject(request.getPathInfo());
       if (object.exists()) {
         // respond as XML encoded multi status
         response.setContentType("text/xml");
@@ -84,7 +97,7 @@ public class PropFindHandler extends WebdavHandler {
                                       getBaseUrl(request),
                                       getDepth(request),
                                       ignoreValues);
-        //log(multiStatusResponse);
+        logXml(multiStatusResponse);
 
         // write the actual response
         XMLWriter writer = new XMLWriter(response.getWriter(), OutputFormat.createCompactFormat());
@@ -93,15 +106,16 @@ public class PropFindHandler extends WebdavHandler {
         writer.close();
 
       } else {
-        log("!! " + object.getName().getPath() + " NOT FOUND");
+        LOG.error(object.getName().getPath() + " NOT FOUND");
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
       }
     } catch (DocumentException e) {
-      log("!! inavlid request: " + e.getMessage());
+      LOG.error("invalid request: " + e.getMessage());
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
     }
   }
 
+  @SuppressWarnings({"ConstantConditions"})
   private Document getMultiStatusRespons(FileObject object,
                                          List<String> requestedProperties,
                                          URL baseUrl,
@@ -116,7 +130,7 @@ public class PropFindHandler extends WebdavHandler {
       Element responseEl = multiStatus.addElement(TAG_RESPONSE);
       try {
         URL url = new URL(baseUrl, URLEncoder.encode(child.getName().getPath(), "UTF-8"));
-        log("!! " + url);
+        LOG.debug(url);
         responseEl.addElement(TAG_HREF).addText(url.toExternalForm());
       } catch (Exception e) {
         e.printStackTrace();

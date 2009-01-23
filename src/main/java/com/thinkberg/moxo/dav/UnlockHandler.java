@@ -16,8 +16,9 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.LockManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,12 +30,13 @@ import java.io.IOException;
  * @version $Id$
  */
 public class UnlockHandler extends WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(UnlockHandler.class);
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
     String lockTokenHeader = request.getHeader("Lock-Token");
     String lockToken = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
-    log("UNLOCK(" + lockToken + ")");
+    LOG.debug("UNLOCK(" + lockToken + ")");
 
     if (LockManager.getInstance().releaseLock(object, lockToken)) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);

@@ -18,6 +18,8 @@ package com.thinkberg.moxo.vfs.jets3t;
 
 import com.thinkberg.moxo.vfs.S3FileName;
 import com.thinkberg.moxo.vfs.S3FileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
@@ -35,6 +37,8 @@ import java.util.Collection;
  * @author Matthias L. Jugel
  */
 public class Jets3tFileSystem extends AbstractFileSystem {
+  private static final Log LOG = LogFactory.getLog(Jets3tFileSystem.class);
+
   private S3Service service;
   private S3Bucket bucket;
 
@@ -43,11 +47,13 @@ public class Jets3tFileSystem extends AbstractFileSystem {
     String bucketId = fileName.getRootFile();
     try {
       service = Jets3tConnector.getInstance().getService();
-      bucket = new S3Bucket(bucketId);
       if (!service.isBucketAccessible(bucketId)) {
+        LOG.info("creating new S3 bucket (" + bucketId + ") for file system");
         bucket = service.createBucket(bucketId);
+      } else {
+        LOG.info("using existing S3 bucket: " + bucketId);
+        bucket = new S3Bucket(bucketId);
       }
-      System.err.println("Created new S3 FileSystem: " + bucketId);
     } catch (S3ServiceException e) {
       throw new FileSystemException(e);
     }

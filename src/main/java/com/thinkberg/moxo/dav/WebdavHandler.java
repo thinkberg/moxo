@@ -16,17 +16,16 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
-import org.dom4j.Node;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
+import org.apache.commons.vfs.FileSystemManager;
+import org.apache.commons.vfs.VFS;
+import org.jets3t.service.Jets3tProperties;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,34 +36,35 @@ import java.util.Arrays;
  * @version $Id$
  */
 public abstract class WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(WebdavHandler.class);
+
+  static final int SC_CREATED = 201;
   static final int SC_LOCKED = 423;
   static final int SC_MULTI_STATUS = 207;
 
-  private HttpServlet servlet;
+  private static FileObject fileSystemRoot;
 
-  public void setServlet(HttpServlet servlet) {
-    this.servlet = servlet;
-  }
-
-  public abstract void service(HttpServletRequest request, HttpServletResponse response) throws IOException;
-
-  void log(Node element) {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+  static {
     try {
-      XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());
-      xmlWriter.write(element);
-      System.out.print(bos.toString());
-    } catch (IOException e) {
-      servlet.log("!! " + e.getMessage());
+      String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
+      Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
+      FileSystemManager fsm = VFS.getManager();
+
+      // create a virtual filesystemusing the url provided or fall back to RAM
+      fileSystemRoot = fsm.resolveFile(properties.getStringProperty("vfs.url", "ram:/"));
+
+      LOG.info("created virtual file system: " + fileSystemRoot);
+    } catch (FileSystemException e) {
+      LOG.error("can't create virtual file system: " + e.getMessage());
+      e.printStackTrace();
     }
   }
 
-  void log(String message) {
-    servlet.log("## " + message);
+  protected static FileObject getVFSObject(String path) throws FileSystemException {
+    return fileSystemRoot.resolveFile(path);
   }
 
-
-  static URL getBaseUrl(HttpServletRequest request) {
+  protected static URL getBaseUrl(HttpServletRequest request) {
     try {
       String requestUrl = request.getRequestURL().toString();
       String requestUri = request.getRequestURI();
@@ -76,6 +76,7 @@ public abstract class WebdavHandler {
     return null;
   }
 
+  public abstract void service(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
   /**
    * Get the depth header value. This value defines how operations
@@ -96,7 +97,7 @@ public abstract class WebdavHandler {
       depthValue = Integer.parseInt(depth);
     }
 
-    log("Depth: " + depthValue);
+    LOG.debug("request header: Depth: " + (depthValue == Integer.MAX_VALUE ? "infinity" : depthValue));
     return depthValue;
   }
 
@@ -110,7 +111,8 @@ public abstract class WebdavHandler {
   boolean getOverwrite(HttpServletRequest request) {
     String overwrite = request.getHeader("Overwrite");
     boolean overwriteValue = overwrite == null || "T".equals(overwrite);
-    log("Overwrite: " + overwriteValue);
+
+    LOG.debug("request header: Overwrite: " + overwriteValue);
     return overwriteValue;
   }
 
@@ -128,8 +130,8 @@ public abstract class WebdavHandler {
     FileObject targetObject = null;
     if (null != targetUrlStr) {
       URL target = new URL(targetUrlStr);
-      targetObject = ResourceManager.getFileObject(target.getPath());
-      log("Destination: " + targetObject.getName().getPath());
+      targetObject = getVFSObject(target.getPath());
+      LOG.debug("request header: Destination: " + targetObject.getName().getPath());
     }
 
     return targetObject;
@@ -142,7 +144,12 @@ public abstract class WebdavHandler {
    * @return the value if the If: header.
    */
   String getIf(HttpServletRequest request) {
-    return request.getHeader("If");
+    String getIfHeader = request.getHeader("If");
+
+    if (null != getIfHeader) {
+      LOG.debug("request header: If: " + getIfHeader);
+    }
+    return getIfHeader;
   }
 
   /**
@@ -155,7 +162,7 @@ public abstract class WebdavHandler {
     String timeout = request.getHeader("Timeout");
     if (null != timeout) {
       String[] timeoutValues = timeout.split(",[ ]*");
-      log(Arrays.asList(timeoutValues).toString());
+      LOG.debug("request header: Timeout: " + Arrays.asList(timeoutValues).toString());
       if ("infinity".equalsIgnoreCase(timeoutValues[0])) {
         return -1;
       } else {

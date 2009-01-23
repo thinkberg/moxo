@@ -16,7 +16,6 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import org.apache.commons.vfs.FileContent;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
@@ -35,7 +34,7 @@ import java.io.OutputStream;
 public class GetHandler extends WebdavHandler {
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
 
     if (object.exists()) {
       if (FileType.FOLDER.equals(object.getType())) {

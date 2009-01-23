@@ -16,6 +16,8 @@
 
 package com.thinkberg.moxo.vfs.jets3t;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
@@ -26,6 +28,8 @@ import org.jets3t.service.security.AWSCredentials;
  * @author Matthias L. Jugel
  */
 public class Jets3tConnector {
+  private static final Log LOG = LogFactory.getLog(Jets3tConnector.class);
+
   private static final String APPLICATION_DESCRIPTION = "S3 VFS Connector/1.0";
 
   private static Jets3tConnector instance;
@@ -54,7 +58,6 @@ public class Jets3tConnector {
    *          if the service cannot be accessed
    */
   private Jets3tConnector() throws S3ServiceException {
-    System.err.print("Authenticated to Amazon S3: ");
     String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
     Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
 
@@ -62,13 +65,14 @@ public class Jets3tConnector {
       throw new S3ServiceException("can't find S3 configuration: " + propertiesFileName);
     }
 
+
     AWSCredentials awsCredentials = new AWSCredentials(
             properties.getStringProperty("accesskey", null),
             properties.getStringProperty("secretkey", null));
 
 
     service = new RestS3Service(awsCredentials, APPLICATION_DESCRIPTION, null);
-    System.err.println("OK");
+    LOG.info("S3 authentication succeeded");
   }
 
   public S3Service getService() {

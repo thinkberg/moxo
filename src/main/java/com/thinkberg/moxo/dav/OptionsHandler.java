@@ -16,7 +16,6 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileType;
 
@@ -35,7 +34,7 @@ public class OptionsHandler extends WebdavHandler {
 
     String path = request.getPathInfo();
     StringBuffer options = new StringBuffer();
-    FileObject object = ResourceManager.getFileObject(path);
+    FileObject object = getVFSObject(path);
     if (object.exists()) {
       options.append("OPTIONS, GET, HEAD, POST, DELETE, TRACE, COPY, MOVE, LOCK, UNLOCK, PROPFIND");
       if (FileType.FOLDER.equals(object.getType())) {

@@ -39,7 +39,6 @@ public class DavTestCase extends TestCase {
     aDirectory.createFolder();
   }
 
-  @SuppressWarnings({"SameParameterValue"})
   protected void testPropertyValue(FileObject object, String propertyName, String propertyValue) throws FileSystemException {
     Element root = serializeDavResource(object, propertyName);
     assertEquals(propertyValue, selectExistingPropertyValue(root, propertyName));
@@ -58,7 +57,6 @@ public class DavTestCase extends TestCase {
     return root.selectSingleNode(PROP_MISSING + propertyName);
   }
 
-  @SuppressWarnings({"SameParameterValue"})
   String selectMissingPropertyName(Element root, String propertyName) {
     return selectMissingProperty(root, propertyName).getName();
   }

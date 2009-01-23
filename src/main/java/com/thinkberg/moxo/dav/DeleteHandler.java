@@ -16,9 +16,10 @@
 
 package com.thinkberg.moxo.dav;
 
-import com.thinkberg.moxo.ResourceManager;
 import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSelectInfo;
 import org.apache.commons.vfs.FileSelector;
@@ -33,6 +34,7 @@ import java.io.IOException;
  * @version $Id$
  */
 public class DeleteHandler extends WebdavHandler {
+  private static final Log LOG = LogFactory.getLog(DeleteHandler.class);
 
   private final static FileSelector ALL_FILES_SELECTOR = new FileSelector() {
     public boolean includeFile(FileSelectInfo fileSelectInfo) throws Exception {
@@ -45,7 +47,7 @@ public class DeleteHandler extends WebdavHandler {
   };
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    FileObject object = ResourceManager.getFileObject(request.getPathInfo());
+    FileObject object = getVFSObject(request.getPathInfo());
     if (request instanceof Request) {
       String fragment = ((Request) request).getUri().getFragment();
       if (fragment != null) {
@@ -66,7 +68,9 @@ public class DeleteHandler extends WebdavHandler {
     }
 
     if (object.exists()) {
-      if (object.delete(ALL_FILES_SELECTOR) > 0) {
+      int deletedObjects = object.delete(ALL_FILES_SELECTOR);
+      LOG.debug("deleted " + deletedObjects + " objects");
+      if (deletedObjects > 0) {
         response.setStatus(HttpServletResponse.SC_OK);
       } else {
         response.sendError(HttpServletResponse.SC_FORBIDDEN);

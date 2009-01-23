@@ -71,7 +71,7 @@ public class DavCollection extends DavResource {
   }
 
   protected boolean addQuotaProperty(Element root) {
-    root.addElement(PROP_QUOTA).addText("1000000");
+    root.addElement(PROP_QUOTA).addText("" + Long.MAX_VALUE);
     return true;
   }
 
@@ -82,7 +82,7 @@ public class DavCollection extends DavResource {
   }
 
   protected boolean addQuotaAvailableBytesProperty(Element root) {
-    root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText("1000000");
+    root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText("" + Long.MAX_VALUE);
     return true;
   }
 
