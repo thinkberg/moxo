@@ -10,8 +10,10 @@ b) an Amazon S3 provider backend for apache-commons-vfs
 The WebDAV server is semi-complete in a sense that it works well for most tests in the
 listmus test suite except for property handling which is virtually non-existing.
 
-The VFS backend is started and provides read-only access. I have managed to browse through
-my test backup on S3 using MacOSX own Finder DAV client.
+The VFS backend is started and provides write access. You can already use it with the
+MacOS X Finder to copy, move and delete etc. files on Amazon S3. Some commands may time out
+because the caching of large files from S3 may take a while longer than the WebDAV
+client is willing to wait.
 
 INFO:
 
@@ -35,5 +37,7 @@ TODO:
 - Create an executable JAR with all required libraries. The Main is already prepared to do
   that but I have not yet fully understood how to get maven to package the jars right next
   to the compiled classes.
-- Add write access to the VFS backend.
-- Much more ...
+- WebDAV property handling
+- S3 ACL support
+- separated jar packages for the vfs backend and the dav frontend
+
