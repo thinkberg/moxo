@@ -25,6 +25,7 @@ import org.apache.commons.vfs.FileType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * @author Matthias L. Jugel
@@ -37,19 +38,26 @@ public abstract class CopyMoveBase extends WebdavHandler {
     FileObject object = getVFSObject(request.getPathInfo());
     FileObject targetObject = getDestination(request);
 
+
     try {
-      // check that we can write the target
-      LockManager.getInstance().checkCondition(targetObject, getIf(request));
-      // if we move, check that we can actually write on the source
+      final LockManager lockManager = LockManager.getInstance();
+      LockManager.EvaluationResult evaluation = lockManager.evaluateCondition(targetObject, getIf(request));
+      if (!evaluation.result) {
+        response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+        return;
+      }
       if ("MOVE".equals(request.getMethod())) {
-        LockManager.getInstance().checkCondition(object, getIf(request));
+        evaluation = lockManager.evaluateCondition(object, getIf(request));
+        if (!evaluation.result) {
+          response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+          return;
+        }
       }
     } catch (LockException e) {
-      if (e.getLocks() != null) {
-        response.sendError(SC_LOCKED);
-      } else {
-        response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
-      }
+      response.sendError(SC_LOCKED);
+      return;
+    } catch (ParseException e) {
+      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
       return;
     }
 

@@ -78,10 +78,16 @@ public class MoxoWebDAVServlet extends HttpServlet {
 //    }
 
 
-    String method = request.getMethod();
-    if (request.getHeader("X-Litmus") != null) {
-      LOG.info(String.format("WebDAV Litmus Test: %s", request.getHeader("X-Litmus")));
+    // show we are doing the litmus test
+    String litmusTest = request.getHeader("X-Litmus");
+    if (null == litmusTest) {
+      litmusTest = request.getHeader("X-Litmus-Second");
     }
+    if (litmusTest != null) {
+      LOG.info(String.format("WebDAV Litmus Test: %s", litmusTest));
+    }
+
+    String method = request.getMethod();
     LOG.debug(String.format(">> %s %s", request.getMethod(), request.getPathInfo()));
     if (handlers.containsKey(method)) {
       handlers.get(method).service(request, response);
@@ -90,6 +96,6 @@ public class MoxoWebDAVServlet extends HttpServlet {
     }
     Response jettyResponse = ((Response) response);
     String reason = jettyResponse.getReason();
-    LOG.debug(String.format("<< %s (%b%s)", request.getMethod(), jettyResponse.getStatus(), reason != null ? ": " + reason : ""));
+    LOG.debug(String.format("<< %s (%d%s)", request.getMethod(), jettyResponse.getStatus(), reason != null ? ": " + reason : ""));
   }
 }

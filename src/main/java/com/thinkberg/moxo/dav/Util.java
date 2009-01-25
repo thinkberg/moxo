@@ -19,6 +19,10 @@ package com.thinkberg.moxo.dav;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -40,15 +44,25 @@ public class Util {
 //  }
 
 
-  public static int copyStream(InputStream is, OutputStream os) throws IOException {
-    byte[] buffer = new byte[8192];
-    int bytesRead, bytesCount = 0;
-    while ((bytesRead = is.read(buffer)) != -1) {
-      os.write(buffer, 0, bytesRead);
-      bytesCount += bytesRead;
-    }
-    os.flush();
+  public static long copyStream(final InputStream is, final OutputStream os) throws IOException {
+    ReadableByteChannel rbc = Channels.newChannel(is);
+    WritableByteChannel wbc = Channels.newChannel(os);
 
-    return bytesCount;
+    int bytesWritten = 0;
+    final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
+    while (rbc.read(buffer) != -1) {
+      buffer.flip();
+      bytesWritten += wbc.write(buffer);
+      buffer.compact();
+    }
+    buffer.flip();
+    while (buffer.hasRemaining()) {
+      bytesWritten += wbc.write(buffer);
+    }
+
+    rbc.close();
+    wbc.close();
+
+    return bytesWritten;
   }
 }

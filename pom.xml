@@ -58,14 +58,64 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
+                    <verbose>true</verbose>
+                    <fork>true</fork>
                     <source>1.5</source>
                     <target>1.5</target>
                 </configuration>
             </plugin>
+
+            <!--
+              mvn test
+              Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/MoxoTest.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!--
+               jar
+               mvn package
+               Documentation: http://maven.apache.org/plugins/maven-jar-plugin/
+             -->
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-jar-plugin</artifactId>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<phase>package</phase>-->
+            <!--<goals>-->
+            <!--<goal>jar</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<classifier>client</classifier>-->
+            <!--<includes>-->
+            <!--<include>**/client/*</include>-->
+            <!--<include>**/servlet/*</include>-->
+            <!--<include>barcode-client.properties</include>-->
+            <!--<include>log4j.properties</include>-->
+            <!--<include>images/*</include>-->
+            <!--<include>templates/*</include>-->
+            <!--</includes>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

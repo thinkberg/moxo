@@ -51,7 +51,7 @@ public abstract class WebdavHandler {
       FileSystemManager fsm = VFS.getManager();
 
       // create a virtual filesystemusing the url provided or fall back to RAM
-      fileSystemRoot = fsm.resolveFile(properties.getStringProperty("vfs.url", "ram:/"));
+      fileSystemRoot = fsm.resolveFile(properties.getStringProperty("vfs.uri", "ram:/"));
 
       LOG.info("created virtual file system: " + fileSystemRoot);
     } catch (FileSystemException e) {
@@ -97,7 +97,7 @@ public abstract class WebdavHandler {
       depthValue = Integer.parseInt(depth);
     }
 
-    LOG.debug("request header: Depth: " + (depthValue == Integer.MAX_VALUE ? "infinity" : depthValue));
+    LOG.debug(String.format("request header: Depth: %s", (depthValue == Integer.MAX_VALUE ? "infinity" : depthValue)));
     return depthValue;
   }
 
@@ -112,7 +112,7 @@ public abstract class WebdavHandler {
     String overwrite = request.getHeader("Overwrite");
     boolean overwriteValue = overwrite == null || "T".equals(overwrite);
 
-    LOG.debug("request header: Overwrite: " + overwriteValue);
+    LOG.debug(String.format("request header: Overwrite: %s", overwriteValue));
     return overwriteValue;
   }
 
@@ -131,7 +131,7 @@ public abstract class WebdavHandler {
     if (null != targetUrlStr) {
       URL target = new URL(targetUrlStr);
       targetObject = getVFSObject(target.getPath());
-      LOG.debug("request header: Destination: " + targetObject.getName().getPath());
+      LOG.debug(String.format("request header: Destination: %s", targetObject.getName().getPath()));
     }
 
     return targetObject;
@@ -147,7 +147,7 @@ public abstract class WebdavHandler {
     String getIfHeader = request.getHeader("If");
 
     if (null != getIfHeader) {
-      LOG.debug("request header: If: " + getIfHeader);
+      LOG.debug(String.format("request header: If: '%s'", getIfHeader));
     }
     return getIfHeader;
   }
@@ -162,7 +162,7 @@ public abstract class WebdavHandler {
     String timeout = request.getHeader("Timeout");
     if (null != timeout) {
       String[] timeoutValues = timeout.split(",[ ]*");
-      LOG.debug("request header: Timeout: " + Arrays.asList(timeoutValues).toString());
+      LOG.debug(String.format("request header: Timeout: %s", Arrays.asList(timeoutValues).toString()));
       if ("infinity".equalsIgnoreCase(timeoutValues[0])) {
         return -1;
       } else {

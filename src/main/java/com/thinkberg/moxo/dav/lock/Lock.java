@@ -132,10 +132,7 @@ public class Lock {
 
 
   public String toString() {
-    return new StringBuffer().append("Lock[")
-            .append(object).append(",")
-            .append(type).append(",")
-            .append(scope).append("]").toString();
+    return String.format("Lock[%s,%s,%s,%s]", object, type, scope, token);
   }
 }
 

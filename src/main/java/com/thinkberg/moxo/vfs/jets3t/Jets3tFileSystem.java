@@ -48,15 +48,25 @@ public class Jets3tFileSystem extends AbstractFileSystem {
     try {
       service = Jets3tConnector.getInstance().getService();
       if (!service.isBucketAccessible(bucketId)) {
-        LOG.info("creating new S3 bucket (" + bucketId + ") for file system");
+        LOG.info(String.format("creating new S3 bucket '%s' for file system root", bucketId));
         bucket = service.createBucket(bucketId);
       } else {
-        LOG.info("using existing S3 bucket: " + bucketId);
+        LOG.info(String.format("using existing S3 bucket '%s' for file system root", bucketId));
         bucket = new S3Bucket(bucketId);
       }
     } catch (S3ServiceException e) {
       throw new FileSystemException(e);
     }
+  }
+
+  public void destroyFileSystem() throws FileSystemException {
+    try {
+      service.deleteBucket(bucket);
+    } catch (S3ServiceException e) {
+      throw new FileSystemException("can't delete file system root", e);
+    }
+
+
   }
 
   @SuppressWarnings({"unchecked"})
@@ -67,4 +77,6 @@ public class Jets3tFileSystem extends AbstractFileSystem {
   protected FileObject createFile(FileName fileName) throws Exception {
     return new Jets3tFileObject(fileName, this, service, bucket);
   }
+
+
 }

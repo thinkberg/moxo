@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Matthias L. Jugel.
+ * Copyright 2009 Matthias L. Jugel.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,8 @@ package com.thinkberg.moxo.dav.lock;
 
 import java.util.List;
 
-/**
- * @author Matthias L. Jugel
- * @version $Id$
- */
-public class LockException extends Exception {
-  private final List<Lock> locks;
-
-  public LockException(List<Lock> locks) {
-    super();
-    this.locks = locks;
-  }
-
-  public List<Lock> getLocks() {
-    return locks;
-  }
-
-  public String toString() {
-    return String.format("[%s: %s]", this.getClass(), locks);
+public class LockConditionRequiredException extends LockException {
+  public LockConditionRequiredException(List<Lock> locks) {
+    super(locks);
   }
 }

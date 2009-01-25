@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
 
 /**
  * @author Matthias L. Jugel
@@ -40,16 +41,17 @@ public class PutHandler extends WebdavHandler {
     FileObject object = getVFSObject(request.getPathInfo());
 
     try {
-      LockManager.getInstance().checkCondition(object, getIf(request));
-    } catch (LockException e) {
-      if (e.getLocks() != null) {
-        response.sendError(SC_LOCKED);
-      } else {
+      if (!LockManager.getInstance().evaluateCondition(object, getIf(request)).result) {
         response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+        return;
       }
+    } catch (LockException e) {
+      response.sendError(WebdavHandler.SC_LOCKED);
+      return;
+    } catch (ParseException e) {
+      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
       return;
     }
-
     // it is forbidden to write data on a folder
     if (object.exists() && FileType.FOLDER.equals(object.getType())) {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -69,8 +71,9 @@ public class PutHandler extends WebdavHandler {
 
     InputStream is = request.getInputStream();
     OutputStream os = object.getContent().getOutputStream();
-    int bytesCopied = Util.copyStream(is, os);
-    LOG.debug("sending " + bytesCopied + "/" + request.getHeader("Content-length") + " bytes");
+    long bytesCopied = Util.copyStream(is, os);
+    String contentLengthHeader = request.getHeader("Content-length");
+    LOG.debug(String.format("sent %d/%s bytes", bytesCopied, contentLengthHeader == null ? "unknown" : contentLengthHeader));
     os.flush();
     object.close();
 

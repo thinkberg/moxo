@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -49,13 +50,15 @@ public class PropPatchHandler extends WebdavHandler {
     FileObject object = getVFSObject(request.getPathInfo());
 
     try {
-      LockManager.getInstance().checkCondition(object, getIf(request));
-    } catch (LockException e) {
-      if (e.getLocks() != null) {
-        response.sendError(SC_LOCKED);
-      } else {
+      if (!LockManager.getInstance().evaluateCondition(object, getIf(request)).result) {
         response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+        return;
       }
+    } catch (LockException e) {
+      response.sendError(WebdavHandler.SC_LOCKED);
+      return;
+    } catch (ParseException e) {
+      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
       return;
     }
 

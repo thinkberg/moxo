@@ -19,6 +19,8 @@ package com.thinkberg.moxo.vfs;
 import junit.framework.TestCase;
 import org.jets3t.service.Jets3tProperties;
 
+import java.util.Random;
+
 /**
  * @author Matthias L. Jugel
  */
@@ -28,6 +30,8 @@ public class S3TestCase extends TestCase {
   static {
     String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
     Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
-    ROOT = properties.getStringProperty("vfs.url", "ram:/");
+    System.out.println("ignoring original vfs.url settings for test: " + properties.getStringProperty("vfs.uri", "ram:/"));
+    ROOT = "s3://MOXOTEST" + String.format("%X", new Random(System.currentTimeMillis()).nextLong()) + "/";
+    System.out.println("using " + ROOT);
   }
 }

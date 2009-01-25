@@ -63,8 +63,7 @@ public class DavResource extends AbstractDavResource {
           PROP_LOCK_DISCOVERY,
           PROP_RESOURCETYPE,
           PROP_SOURCE,
-          PROP_SUPPORTED_LOCK,
-          PROP_QUOTA_AVAILABLE_BYTES
+          PROP_SUPPORTED_LOCK
   );
 
   protected final FileObject object;

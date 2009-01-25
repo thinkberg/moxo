@@ -1,5 +1,5 @@
 Moxo S3 DAV Proxy Server
-Copyright 2007 Matthias L. Jugel. See LICENSE for details.
+Copyright 2007, 2009 Matthias L. Jugel. See LICENSE for details.
 http://thinkberg.com/
 
 This is a first go on two issues:
@@ -37,6 +37,7 @@ TODO:
 - Create an executable JAR with all required libraries. The Main is already prepared to do
   that but I have not yet fully understood how to get maven to package the jars right next
   to the compiled classes.
+- implement a good way to handle ETags for webdav (using vfs)
 - WebDAV property handling
 - S3 ACL support
 - separated jar packages for the vfs backend and the dav frontend

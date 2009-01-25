@@ -28,6 +28,7 @@ import org.mortbay.jetty.Request;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * @author Matthias L. Jugel
@@ -57,13 +58,15 @@ public class DeleteHandler extends WebdavHandler {
     }
 
     try {
-      LockManager.getInstance().checkCondition(object, getIf(request));
-    } catch (LockException e) {
-      if (e.getLocks() != null) {
-        response.sendError(SC_LOCKED);
-      } else {
+      if (!LockManager.getInstance().evaluateCondition(object, getIf(request)).result) {
         response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+        return;
       }
+    } catch (LockException e) {
+      response.sendError(WebdavHandler.SC_LOCKED);
+      return;
+    } catch (ParseException e) {
+      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
       return;
     }
 

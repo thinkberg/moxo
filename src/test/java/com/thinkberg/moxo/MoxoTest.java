@@ -38,7 +38,7 @@ public class MoxoTest extends TestCase {
     String propertiesFileName = System.getProperty("moxo.properties", "moxo.properties");
     Jets3tProperties properties = Jets3tProperties.getInstance(propertiesFileName);
 
-    String vfsUrl = properties.getStringProperty("vfs.url", null);
+    String vfsUrl = properties.getStringProperty("vfs.uri", null);
     if (null != vfsUrl && vfsUrl.startsWith("s3:")) {
       s.addTestSuite(S3FileNameTest.class);
       s.addTestSuite(S3FileProviderTest.class);

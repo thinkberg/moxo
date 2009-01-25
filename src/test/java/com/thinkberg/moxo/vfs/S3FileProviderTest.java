@@ -16,6 +16,7 @@
 
 package com.thinkberg.moxo.vfs;
 
+import com.thinkberg.moxo.vfs.jets3t.Jets3tFileSystem;
 import org.apache.commons.vfs.*;
 
 import java.io.IOException;
@@ -168,13 +169,18 @@ public class S3FileProviderTest extends S3TestCase {
     assertFalse(destFolder.exists());
   }
 
-  public void testMoveFolder() throws FileSystemException {
-
-  }
+//  public void testMoveFolder() throws FileSystemException {
+//
+//  }
 
   public void testCloseFileSystem() throws FileSystemException {
     FileSystem fs = VFS.getManager().resolveFile(ROOT).getFileSystem();
     VFS.getManager().closeFileSystem(fs);
   }
 
+  public void testDestroyFileSystem() throws FileSystemException {
+    FileSystem fs = VFS.getManager().resolveFile(ROOT).getFileSystem();
+    assertTrue(fs instanceof Jets3tFileSystem);
+    ((Jets3tFileSystem) fs).destroyFileSystem();
+  }
 }

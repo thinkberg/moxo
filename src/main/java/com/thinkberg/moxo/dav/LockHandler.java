@@ -18,7 +18,6 @@ package com.thinkberg.moxo.dav;
 
 import com.thinkberg.moxo.dav.lock.Lock;
 import com.thinkberg.moxo.dav.lock.LockConflictException;
-import com.thinkberg.moxo.dav.lock.LockException;
 import com.thinkberg.moxo.dav.lock.LockManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.text.ParseException;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Handle WebDAV LOCK requests.
@@ -57,13 +58,29 @@ public class LockHandler extends WebdavHandler {
     FileObject object = getVFSObject(request.getPathInfo());
 
     try {
-      Lock lock = LockManager.getInstance().checkCondition(object, getIf(request));
-      if (lock != null) {
-        sendLockAcquiredResponse(response, lock);
+      final LockManager manager = LockManager.getInstance();
+      final LockManager.EvaluationResult evaluation = manager.evaluateCondition(object, getIf(request));
+      if (!evaluation.result) {
+        response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
         return;
+      } else {
+        if (!evaluation.locks.isEmpty()) {
+          LOG.debug(String.format("discovered locks: %s", evaluation.locks));
+          sendLockAcquiredResponse(response, evaluation.locks.get(0));
+          return;
+        }
       }
-    } catch (LockException e) {
-      // handle locks below
+    } catch (LockConflictException e) {
+      List<Lock> locks = e.getLocks();
+      for (Lock lock : locks) {
+        if (Lock.EXCLUSIVE.equals(lock.getType())) {
+          response.sendError(WebdavHandler.SC_LOCKED);
+          return;
+        }
+      }
+    } catch (ParseException e) {
+      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+      return;
     }
 
     try {
