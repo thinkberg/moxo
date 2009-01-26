@@ -130,9 +130,26 @@
                 <SystemProperty name="jetty.docroot" default="."/>
             </Set>
             <Call name="addServlet">
-                <Arg>com.thinkberg.moxo.servlet.MoxoWebDAVServlet</Arg>
+                <Arg>com.thinkberg.webdav.servlet.MoxoWebDAVServlet</Arg>
                 <Arg>/*</Arg>
+                <Call name="setInitParameter">
+                    <Arg>vfs.uri</Arg>
+                    <Arg>ram:/</Arg>
+                </Call>
+                <Call name="setInitParameter">
+                    <Arg>vfs.auth.domain</Arg>
+                    <Arg></Arg>
+                </Call>
+                <Call name="setInitParameter">
+                    <Arg>vfs.auth.user</Arg>
+                    <Arg>theuser</Arg>
+                </Call>
+                <Call name="setInitParameter">
+                    <Arg>vfs.auth.password</Arg>
+                    <Arg>thepassword</Arg>
+                </Call>
             </Call>
+
         </New>
     </Set>
 

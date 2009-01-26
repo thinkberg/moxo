@@ -29,7 +29,7 @@ import java.net.URL;
  * @author Matthias L. Jugel
  */
 public class MoxoJettyRunner {
-  private static final String CONF_JETTY_XML = "jetty.xml";
+  private static final String CONF_JETTY_XML = "/jetty.xml";
 
   public static void main(String[] args) {
     System.out.println("Moxo S3 DAV Proxy (c) 2007 Matthias L. Jugel");
@@ -51,10 +51,11 @@ public class MoxoJettyRunner {
   }
 
   private static URL getXmlConfigurationUrl() {
-    URL url = MoxoJettyRunner.class.getResource("/" + MoxoJettyRunner.CONF_JETTY_XML);
+    String configFile = System.getProperty("jetty.xml", CONF_JETTY_XML);
+    URL url = MoxoJettyRunner.class.getResource(configFile);
     if (null == url) {
       try {
-        url = new File(MoxoJettyRunner.CONF_JETTY_XML).toURL();
+        url = new File(configFile).toURL();
         System.err.println("Loading configuration from file: " + url.toExternalForm());
       } catch (MalformedURLException e) {
         // ignore ...
