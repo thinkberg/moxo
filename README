@@ -28,16 +28,15 @@ directory in your classpath. Also copy the file moxo.template.properties and edi
 include your Amazon S3 access information as well as the bucket to use. Right now the bucket
 must already exist and contain files uploaded using the Uploader or Synchronize from Jets3t.
 
-Define the system property "moxo.properties" to point to your moxo.properties file:
+Edit jetty.xml or copy it to a local file and point to it using the following command:
 
-java -cp ... -Dmoxo.properties=moxo.properties com.thinkberg.moxo.MoxoJettyRunner
+java -cp ... -Djetty.xml=jetty.xml com.thinkberg.moxo.MoxoJettyRunner
 
 TODO:
 
 - Create an executable JAR with all required libraries. The Main is already prepared to do
   that but I have not yet fully understood how to get maven to package the jars right next
   to the compiled classes.
-- implement a good way to handle ETags for webdav (using vfs)
 - WebDAV property handling
 - S3 ACL support
 - separated jar packages for the vfs backend and the dav frontend

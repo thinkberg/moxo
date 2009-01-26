@@ -82,7 +82,7 @@ public class DavCollection extends DavResource {
   }
 
   protected boolean addQuotaAvailableBytesProperty(Element root) {
-    root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText("" + Long.MAX_VALUE);
+    root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText(Long.toHexString(Long.MAX_VALUE));
     return true;
   }
 
