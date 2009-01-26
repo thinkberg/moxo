@@ -16,6 +16,7 @@
 
 package com.thinkberg.webdav.lock;
 
+import com.thinkberg.webdav.Util;
 import com.thinkberg.webdav.vfs.DepthFileSelector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -223,7 +224,7 @@ public class LockManager {
                 break;
               case TOKEN_LEFT_BRACKET:
                 String eTag = condToken.substring(1, condToken.length() - 1);
-                String resourceETag = String.format("%x", resource.hashCode());
+                String resourceETag = Util.getETag(resource);
                 boolean resourceTagMatches = resourceETag.equals(eTag);
                 final boolean matchesEtagResult = negate ? !resourceTagMatches : resourceTagMatches;
                 LOG.debug(String.format("  %smatches-etag(%s) = %b",

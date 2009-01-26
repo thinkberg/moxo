@@ -16,6 +16,7 @@
 
 package com.thinkberg.webdav.lock;
 
+import com.thinkberg.webdav.Util;
 import org.apache.commons.vfs.FileObject;
 import org.dom4j.Element;
 
@@ -49,7 +50,7 @@ public class Lock {
     this.depth = depth;
     this.timeout = timeout;
 
-    this.token = "opaquelocktoken:" + Integer.toHexString(object.hashCode());
+    this.token = "opaquelocktoken:" + Util.getETag(object);
   }
 
   public FileObject getObject() {

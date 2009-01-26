@@ -57,7 +57,7 @@ public class GetHandler extends WebdavHandler {
   void setHeader(HttpServletResponse response, FileContent content) throws FileSystemException {
     response.setHeader("Last-Modified", Util.getDateString(content.getLastModifiedTime()));
     response.setHeader("Content-Type", content.getContentInfo().getContentType());
-    response.setHeader("ETag", String.format("%x", content.getFile().hashCode()));
+    response.setHeader("ETag", Util.getETag(content.getFile()));
   }
 
 

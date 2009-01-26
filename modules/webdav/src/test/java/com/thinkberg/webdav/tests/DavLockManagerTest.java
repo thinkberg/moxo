@@ -1,6 +1,7 @@
 package com.thinkberg.webdav.tests;
 
 import com.thinkberg.webdav.DavTestCase;
+import com.thinkberg.webdav.Util;
 import com.thinkberg.webdav.lock.Lock;
 import com.thinkberg.webdav.lock.LockConflictException;
 import com.thinkberg.webdav.lock.LockManager;
@@ -74,7 +75,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleLockTokenAndETag() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String condition = "(<" + aLock.getToken() + "> [" + Integer.toHexString(aFile.hashCode()) + "])";
+    final String condition = "(<" + aLock.getToken() + "> [" + Util.getETag(aFile) + "])";
     LockManager.getInstance().acquireLock(aLock);
     assertTrue("condition with existing lock token and correct ETag should not fail",
                LockManager.getInstance().evaluateCondition(aFile, condition).result);
@@ -82,7 +83,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleLockTokenWrongAndETag() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String condition = "(<" + aLock.getToken() + "x> [" + Integer.toHexString(aFile.hashCode()) + "])";
+    final String condition = "(<" + aLock.getToken() + "x> [" + Util.getETag(aFile) + "])";
     LockManager.getInstance().acquireLock(aLock);
     try {
       LockManager.getInstance().evaluateCondition(aFile, condition);
@@ -94,7 +95,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleLockTokenAndETagWrong() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String condition = "(<" + aLock.getToken() + "> [" + Integer.toHexString(aFile.hashCode()) + "x])";
+    final String condition = "(<" + aLock.getToken() + "> [" + Util.getETag(aFile) + "x])";
     LockManager.getInstance().acquireLock(aLock);
     assertFalse("condition with existing lock token and incorrect ETag should fail",
                 LockManager.getInstance().evaluateCondition(aFile, condition).result);
@@ -102,7 +103,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleLockTokenWrongAndETagWrong() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String condition = "(<" + aLock.getToken() + "x> [" + Integer.toHexString(aFile.hashCode()) + "x])";
+    final String condition = "(<" + aLock.getToken() + "x> [" + Util.getETag(aFile) + "x])";
     LockManager.getInstance().acquireLock(aLock);
     assertFalse("condition with non-existing lock token and incorrect ETag should fail",
                 LockManager.getInstance().evaluateCondition(aFile, condition).result);
@@ -110,7 +111,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleLockTokenWrongAndETagOrSimpleETag() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String eTag = Integer.toHexString(aFile.hashCode());
+    final String eTag = Util.getETag(aFile);
     final String condition = "(<" + aLock.getToken() + "x> [" + eTag + "]) ([" + eTag + "])";
     LockManager.getInstance().acquireLock(aLock);
     try {
@@ -123,7 +124,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testConditionSimpleNegatedLockTokenWrongAndETag() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String eTag = Integer.toHexString(aFile.hashCode());
+    final String eTag = Util.getETag(aFile);
     final String condition = "(Not <" + aLock.getToken() + "x> [" + eTag + "])";
     assertTrue("condition with negated wrong lock token and correct ETag should not fail on unlocked resource",
                LockManager.getInstance().evaluateCondition(aFile, condition).result);
@@ -140,7 +141,7 @@ public class DavLockManagerTest extends DavTestCase {
 
   public void testComplexConditionWithBogusLockToken() throws Exception {
     Lock aLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-    final String eTag = Integer.toHexString(aFile.hashCode());
+    final String eTag = Util.getETag(aFile);
     final String condition = "(<" + aLock.getToken() + "> [" + eTag + "x]) (Not <DAV:no-lock> [" + eTag + "x])";
     LockManager.getInstance().acquireLock(aLock);
     assertFalse("complex condition with bogus eTag should fail",

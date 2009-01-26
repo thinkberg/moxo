@@ -16,6 +16,10 @@
 
 package com.thinkberg.webdav;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,5 +68,17 @@ public class Util {
     wbc.close();
 
     return bytesWritten;
+  }
+
+  public static String getETag(FileObject object) {
+    String fileName = object.getName().getPath();
+    String lastModified = "";
+    try {
+      lastModified = String.valueOf(object.getContent().getLastModifiedTime());
+    } catch (FileSystemException e) {
+      // ignore error here
+    }
+
+    return DigestUtils.shaHex(fileName + lastModified);
   }
 }
