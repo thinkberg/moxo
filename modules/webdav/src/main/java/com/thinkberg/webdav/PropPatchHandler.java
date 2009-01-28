@@ -43,18 +43,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handle PROPPATCH requests. This currently a dummy only and will return a
- * forbidden status for any attempt to modify or remove a property.
+ * Handle PROPPATCH requests. This will set, update or remove properties from a resource
+ * or collection. Only works if the underlying VFS backend supports filesystem attributes.
  *
  * @author Matthias L. Jugel
  */
 public class PropPatchHandler extends WebdavHandler {
   private static final Log LOG = LogFactory.getLog(PropPatchHandler.class);
 
-  private static final String TAG_MULTISTATUS = "multistatus";
-  private static final String TAG_HREF = "href";
-  private static final String TAG_RESPONSE = "response";
-
+  /**
+   * Handle a PROPPATCH request.
+   *
+   * @param request  the servlet request
+   * @param response the servlet response
+   * @throws IOException if there is an error that cannot be handled normally
+   */
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     FileObject object = VFSBackend.resolveFile(request.getPathInfo());
 
@@ -117,11 +120,21 @@ public class PropPatchHandler extends WebdavHandler {
     }
   }
 
-  private Document getMultiStatusResponse(FileObject object, List<Element> requestedProperties, URL baseUrl) throws FileSystemException {
+  /**
+   * Get a multistatus response for each of the property set/remove requests.
+   *
+   * @param object              the context object the property requests apply to
+   * @param requestedProperties the properties that should be set or removed
+   * @param baseUrl             the base url of this server
+   * @return an XML document that is the response
+   * @throws FileSystemException if there is an error setting or removing a property
+   */
+  private Document getMultiStatusResponse(FileObject object, List<Element> requestedProperties, URL baseUrl)
+          throws FileSystemException {
     Document propDoc = DocumentHelper.createDocument();
     propDoc.setXMLEncoding("UTF-8");
 
-    Element multiStatus = propDoc.addElement(TAG_MULTISTATUS, "DAV:");
+    Element multiStatus = propDoc.addElement(TAG_MULTISTATUS, NAMESPACE_DAV);
     Element responseEl = multiStatus.addElement(TAG_RESPONSE);
     try {
       URL url = new URL(baseUrl, URLEncoder.encode(object.getName().getPath(), "UTF-8"));

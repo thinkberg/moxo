@@ -29,16 +29,25 @@ import java.io.IOException;
 import java.text.ParseException;
 
 /**
+ * The body of all COPY or MOVE requests. As these requests are very similar, they are handles mainly
+ * by this class. Only the actual execution using the underlying VFS backend is done in sub classes.
+ *
  * @author Matthias L. Jugel
  * @version $Id$
  */
 public abstract class CopyMoveBase extends WebdavHandler {
 
+  /**
+   * Handle a COPY or MOVE request.
+   *
+   * @param request  the servlet request
+   * @param response the servlet response
+   * @throws IOException if there is an error executing this request
+   */
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     boolean overwrite = getOverwrite(request);
     FileObject object = VFSBackend.resolveFile(request.getPathInfo());
     FileObject targetObject = getDestination(request);
-
 
     try {
       final LockManager lockManager = LockManager.getInstance();
@@ -62,7 +71,6 @@ public abstract class CopyMoveBase extends WebdavHandler {
       return;
     }
 
-
     if (null == targetObject) {
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
       return;
@@ -82,15 +90,24 @@ public abstract class CopyMoveBase extends WebdavHandler {
     } else {
       FileObject targetParent = targetObject.getParent();
       if (!targetParent.exists() ||
-              !FileType.FOLDER.equals(targetParent.getType())) {
+          !FileType.FOLDER.equals(targetParent.getType())) {
         response.sendError(HttpServletResponse.SC_CONFLICT);
       }
       response.setStatus(HttpServletResponse.SC_CREATED);
     }
 
+    // delegate the actual execution to a sub class
     copyOrMove(object, targetObject, getDepth(request));
   }
 
+  /**
+   * Execute the actual filesystem operation. Must be implemented by sub classes.
+   *
+   * @param object the source object
+   * @param target the target object
+   * @param depth  a depth for copy
+   * @throws FileSystemException if there is an error executing the request
+   */
   protected abstract void copyOrMove(FileObject object, FileObject target, int depth) throws FileSystemException;
 
 }

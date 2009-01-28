@@ -43,6 +43,13 @@ public abstract class WebdavHandler {
   static final int SC_CREATED = 201;
   static final int SC_LOCKED = 423;
   static final int SC_MULTI_STATUS = 207;
+  protected static final String TAG_MULTISTATUS = "multistatus";
+  protected static final String TAG_HREF = "href";
+  protected static final String TAG_RESPONSE = "response";
+  protected static final String TAG_ALLPROP = "allprop";
+  protected static final String TAG_PROPNAMES = "propnames";
+  protected static final String TAG_PROP = "prop";
+  protected static final String NAMESPACE_DAV = "DAV:";
 
   protected static URL getBaseUrl(HttpServletRequest request) {
     try {

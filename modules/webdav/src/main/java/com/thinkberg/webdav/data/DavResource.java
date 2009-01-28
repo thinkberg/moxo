@@ -195,7 +195,8 @@ public class DavResource extends AbstractDavResource {
   }
 
   protected boolean addGetETagProperty(Element root, boolean ignoreValue) {
-    return false;
+    root.addElement(PROP_GET_ETAG, Util.getETag(object));
+    return true;
   }
 
   protected boolean addGetLastModifiedProperty(Element root, boolean ignoreValue) {

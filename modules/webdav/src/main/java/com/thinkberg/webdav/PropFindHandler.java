@@ -44,19 +44,20 @@ import java.util.List;
  * @version $Id$
  */
 public class PropFindHandler extends WebdavHandler {
-  private static final String TAG_MULTISTATUS = "multistatus";
-  private static final String TAG_HREF = "href";
-  private static final String TAG_RESPONSE = "response";
+  private static final Log LOG = LogFactory.getLog(PropFindHandler.class);
 
-  private static final String TAG_ALLPROP = "allprop";
-  private static final String TAG_PROPNAMES = "propnames";
-  private static final String TAG_PROP = "prop";
-
+  // these tags are valid children elements of <propfind>
   private static final List<String> VALID_PROPFIND_TAGS = Arrays.asList(
           TAG_ALLPROP, TAG_PROPNAMES, TAG_PROP
   );
-  private static final Log LOG = LogFactory.getLog(PropFindHandler.class);
 
+  /**
+   * Handle a PROPFIND request.
+   *
+   * @param request  the servlet request
+   * @param response the servlet response
+   * @throws IOException if there is an error that cannot be handled normally
+   */
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     SAXReader saxReader = new SAXReader();
     try {
@@ -88,7 +89,6 @@ public class PropFindHandler extends WebdavHandler {
             writer.close();
 
           } else {
-            LOG.error(object.getName().getPath() + " NOT FOUND");
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
           }
           break;
@@ -100,14 +100,23 @@ public class PropFindHandler extends WebdavHandler {
     }
   }
 
-  private Document getMultiStatusResponse(FileObject object,
-                                          Element propEl,
-                                          URL baseUrl,
-                                          int depth) throws FileSystemException {
+  /**
+   * Create a multistatus response by requesting all properties and writing a response for each
+   * the found and the non-found properties
+   *
+   * @param object  the context object the propfind request applies to
+   * @param propEl  the &lt;prop&gt; element containing the actual properties
+   * @param baseUrl the base url of this server
+   * @param depth   a depth argument for how deep the find will go
+   * @return an XML document that is the response
+   * @throws FileSystemException if there was an error executing the propfind request
+   */
+  private Document getMultiStatusResponse(FileObject object, Element propEl, URL baseUrl, int depth)
+          throws FileSystemException {
     Document propDoc = DocumentHelper.createDocument();
     propDoc.setXMLEncoding("UTF-8");
 
-    Element multiStatus = propDoc.addElement(TAG_MULTISTATUS, "DAV:");
+    Element multiStatus = propDoc.addElement(TAG_MULTISTATUS, NAMESPACE_DAV);
     FileObject[] children = object.findFiles(new DepthFileSelector(depth));
     for (FileObject child : children) {
       Element responseEl = multiStatus.addElement(TAG_RESPONSE);

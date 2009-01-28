@@ -20,6 +20,8 @@ import org.apache.commons.vfs.FileObject;
 import org.dom4j.Element;
 
 /**
+ * A DAV collection is similar to a directory.
+ *
  * @author Matthias L. Jugel
  * @version $Id$
  */
@@ -77,6 +79,7 @@ public class DavCollection extends DavResource {
   }
 
   protected boolean addQuotaAvailableBytesProperty(Element root, boolean ignoreValue) {
+    // TODO add correct handling of available quota
     root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText(Long.toString(Long.MAX_VALUE));
     return true;
   }

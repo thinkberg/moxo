@@ -28,6 +28,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * This is a DAV resource. This class mainly handles the properties associated with a resource.
+ * Please see <a href="http://www.webdav.org/specs/rfc2518.html#dav.properties">RFC2518</a> for
+ * information about necessary properties and their allowed values.
+ *
  * @author Matthias L. Jugel
  * @version $Id$
  */
@@ -46,7 +50,6 @@ public abstract class AbstractDavResource {
   public static final String TAG_PROP_SET = "set";
   public static final String TAG_PROP_REMOVE = "remove";
 
-  // @see http://www.webdav.org/specs/rfc2518.html#dav.properties
   public static final String PROP_CREATION_DATE = "creationdate";
   public static final String PROP_DISPLAY_NAME = "displayname";
   public static final String PROP_GET_CONTENT_LANGUAGE = "getcontentlanguage";
@@ -60,10 +63,10 @@ public abstract class AbstractDavResource {
   public static final String PROP_SUPPORTED_LOCK = "supportedlock";
 
   // non-standard properties
-  static final String PROP_QUOTA = "quota";
-  static final String PROP_QUOTA_USED = "quotaused";
-  static final String PROP_QUOTA_AVAILABLE_BYTES = "quota-available-bytes";
-  static final String PROP_QUOTA_USED_BYTES = "quota-used-bytes";
+  public static final String PROP_QUOTA = "quota";
+  public static final String PROP_QUOTA_USED = "quotaused";
+  public static final String PROP_QUOTA_AVAILABLE_BYTES = "quota-available-bytes";
+  public static final String PROP_QUOTA_USED_BYTES = "quota-used-bytes";
 
   // list of standard supported properties (for allprop/propname)
   public static final List<String> ALL_PROPERTIES = Arrays.asList(
@@ -86,6 +89,16 @@ public abstract class AbstractDavResource {
     this.object = object;
   }
 
+  /**
+   * Set or remove a properties. This method expects a list of xml elements that are the
+   * properties to be set or removed. These elements must not be detached from their
+   * original &lt;set&gt; or &lt;remove&gt; parent tags to be able to determine what
+   * should be done with the property.
+   *
+   * @param root                the root of the result document
+   * @param requestedProperties the list of properties to work on
+   * @return returns the root of the result document
+   */
   public Element setPropertyValues(Element root, List<Element> requestedProperties) {
     // initialize the <propstat> element for 200
     Element okPropStatEl = root.addElement(TAG_PROPSTAT);
@@ -120,6 +133,16 @@ public abstract class AbstractDavResource {
     return root;
   }
 
+  /**
+   * Get property values. This method expects one of either &lt;allprop&gt;, &lt;propnames&gt; or
+   * &lt;prop&gt;. If the element is &lt;prop&gt; it will go through the list of it's children
+   * and request the values. For &lt;allprop&gt; it will get values of all known properties and
+   * &lt;propnames&gt; will return the names of all known properties.
+   *
+   * @param root       the root of the result document
+   * @param propertyEl the prop, propname or allprop element
+   * @return the root of the result document
+   */
   public Element getPropertyValues(Element root, Element propertyEl) {
     // initialize the <propstat> for 200
     Element okPropStatEl = root.addElement(TAG_PROPSTAT);
@@ -181,6 +204,15 @@ public abstract class AbstractDavResource {
     return root;
   }
 
+  /**
+   * Return a specially encoded full qualified name for a namespace and name.
+   * As HTTP headers may only contain ascii, the namespace is base64 encoded if
+   * it exists.
+   *
+   * @param nameSpace the namespace
+   * @param name      the name of the property
+   * @return the encoded attribute name
+   */
   protected String getFQName(String nameSpace, String name) {
     String prefix = "";
     if (!"DAV:".equals(nameSpace) && null != nameSpace && !"".equals(nameSpace)) {
