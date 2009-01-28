@@ -16,7 +16,6 @@
 
 package com.thinkberg.webdav;
 
-import com.thinkberg.webdav.vfs.DepthFileSelector;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 
@@ -26,7 +25,6 @@ import org.apache.commons.vfs.FileSystemException;
  */
 public class MoveHandler extends CopyMoveBase {
   protected void copyOrMove(FileObject object, FileObject target, int depth) throws FileSystemException {
-    target.copyFrom(object, new DepthFileSelector(depth));
-    object.delete(new DepthFileSelector());
+    object.moveTo(target);
   }
 }

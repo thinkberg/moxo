@@ -24,11 +24,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSelectInfo;
 import org.apache.commons.vfs.FileSelector;
-import org.mortbay.jetty.Request;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 
 /**
@@ -50,12 +51,15 @@ public class DeleteHandler extends WebdavHandler {
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     FileObject object = VFSBackend.resolveFile(request.getPathInfo());
-    if (request instanceof Request) {
-      String fragment = ((Request) request).getUri().getFragment();
+
+    try {
+      String fragment = new URI(request.getRequestURI()).getFragment();
       if (fragment != null) {
         response.sendError(HttpServletResponse.SC_FORBIDDEN);
         return;
       }
+    } catch (URISyntaxException e) {
+      throw new IOException(e.getMessage());
     }
 
     try {

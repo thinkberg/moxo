@@ -17,13 +17,8 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>moxo</artifactId>
-        <groupId>com.thinkberg.moxo</groupId>
-        <version>1.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.thinkberg</groupId>
     <artifactId>vfs.s3</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>thinkberg.com S3 VFS provider</name>
@@ -69,11 +64,21 @@
         </resources>
         <plugins>
             <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <verbose>true</verbose>
+                    <fork>true</fork>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/tests/*.java</include>
+                        <include>**/tests/S3FileNameTest.java</include>
+                        <include>**/tests/S3FileProviderTest.java</include>
                     </includes>
                 </configuration>
             </plugin>

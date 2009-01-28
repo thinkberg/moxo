@@ -19,11 +19,17 @@ package com.thinkberg.webdav.data;
 import com.thinkberg.webdav.Util;
 import com.thinkberg.webdav.lock.Lock;
 import com.thinkberg.webdav.lock.LockManager;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.vfs.FileContent;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 
 /**
@@ -32,61 +38,36 @@ import java.util.List;
  */
 public class DavResource extends AbstractDavResource {
 
-  // @see http://www.webdav.org/specs/rfc2518.html#dav.properties
-  public static final String PROP_CREATION_DATE = "creationdate";
-  public static final String PROP_DISPLAY_NAME = "displayname";
-  private static final String PROP_GET_CONTENT_LANGUAGE = "getcontentlanguage";
-  private static final String PROP_GET_CONTENT_LENGTH = "getcontentlength";
-  private static final String PROP_GET_CONTENT_TYPE = "getcontenttype";
-  private static final String PROP_GET_ETAG = "getetag";
-  private static final String PROP_GET_LAST_MODIFIED = "getlastmodified";
-  private static final String PROP_LOCK_DISCOVERY = "lockdiscovery";
-  public static final String PROP_RESOURCETYPE = "resourcetype";
-  private static final String PROP_SOURCE = "source";
-  private static final String PROP_SUPPORTED_LOCK = "supportedlock";
-
-  // non-standard properties
-  static final String PROP_QUOTA = "quota";
-  static final String PROP_QUOTA_USED = "quotaused";
-  static final String PROP_QUOTA_AVAILABLE_BYTES = "quota-available-bytes";
-  static final String PROP_QUOTA_USED_BYTES = "quota-used-bytes";
-
-  // list of standard supported properties (for allprop/propname)
-  public static final List<String> ALL_PROPERTIES = Arrays.asList(
-          PROP_CREATION_DATE,
-          PROP_DISPLAY_NAME,
-          PROP_GET_CONTENT_LANGUAGE,
-          PROP_GET_CONTENT_LENGTH,
-          PROP_GET_CONTENT_TYPE,
-          PROP_GET_ETAG,
-          PROP_GET_LAST_MODIFIED,
-          PROP_LOCK_DISCOVERY,
-          PROP_RESOURCETYPE,
-          PROP_SOURCE,
-          PROP_SUPPORTED_LOCK
-  );
-
-  protected final FileObject object;
-  protected boolean ignoreValues = false;
-
   public DavResource(FileObject object) {
-    this(object, false);
+    super(object);
   }
 
+  protected boolean setPropertyValue(Element root, Element propertyEl) {
+    LogFactory.getLog(getClass()).debug(String.format("[%s].set('%s')", object.getName(), propertyEl.asXML()));
 
-  public DavResource(FileObject object, boolean ignoreValues) {
-    this.object = object;
-    this.ignoreValues = ignoreValues;
-
-  }
-
-  /**
-   * Ignore values
-   *
-   * @param ignoreValues true if the serialized xml should not contain values
-   */
-  public void setIgnoreValues(boolean ignoreValues) {
-    this.ignoreValues = ignoreValues;
+    if (!ALL_PROPERTIES.contains(propertyEl.getName())) {
+      final String nameSpace = propertyEl.getNamespaceURI();
+      final String attributeName = getFQName(nameSpace, propertyEl.getQualifiedName());
+      try {
+        FileContent objectContent = object.getContent();
+        final String command = propertyEl.getParent().getParent().getName();
+        if (TAG_PROP_SET.equals(command)) {
+          StringWriter propertyValueWriter = new StringWriter();
+          propertyEl.write(propertyValueWriter);
+          propertyValueWriter.close();
+          objectContent.setAttribute(attributeName, propertyValueWriter.getBuffer().toString());
+        } else if (TAG_PROP_REMOVE.equals(command)) {
+          objectContent.setAttribute(attributeName, null);
+        }
+        root.addElement(propertyEl.getQName());
+        return true;
+      } catch (IOException e) {
+        LogFactory.getLog(getClass()).error(String.format("can't store attribute property '%s' = '%s'",
+                                                          attributeName,
+                                                          propertyEl.asXML()), e);
+      }
+    }
+    return false;
   }
 
   /**
@@ -95,68 +76,97 @@ public class DavResource extends AbstractDavResource {
    * indicate a missing property.
    *
    * @param root         the root element for the result document fragment
-   * @param propertyName the property name to add
+   * @param propertyName the property name to query
    * @return true for successful addition and false for missing data
    */
-  protected boolean addPropertyValue(Element root, String propertyName) {
+  protected boolean getPropertyValue(Element root, String propertyName, boolean ignoreValue) {
+    LogFactory.getLog(getClass()).debug(String.format("[%s].get('%s')", object.getName(), propertyName));
     if (PROP_CREATION_DATE.equals(propertyName)) {
-      return addCreationDateProperty(root);
+      return addCreationDateProperty(root, ignoreValue);
     } else if (PROP_DISPLAY_NAME.equals(propertyName)) {
-      return addGetDisplayNameProperty(root);
+      return addGetDisplayNameProperty(root, ignoreValue);
     } else if (PROP_GET_CONTENT_LANGUAGE.equals(propertyName)) {
-      return addGetContentLanguageProperty(root);
+      return addGetContentLanguageProperty(root, ignoreValue);
     } else if (PROP_GET_CONTENT_LENGTH.equals(propertyName)) {
-      return addGetContentLengthProperty(root);
+      return addGetContentLengthProperty(root, ignoreValue);
     } else if (PROP_GET_CONTENT_TYPE.equals(propertyName)) {
-      return addGetContentTypeProperty(root);
+      return addGetContentTypeProperty(root, ignoreValue);
     } else if (PROP_GET_ETAG.equals(propertyName)) {
-      return addGetETagProperty(root);
+      return addGetETagProperty(root, ignoreValue);
     } else if (PROP_GET_LAST_MODIFIED.equals(propertyName)) {
-      return addGetLastModifiedProperty(root);
+      return addGetLastModifiedProperty(root, ignoreValue);
     } else if (PROP_LOCK_DISCOVERY.equals(propertyName)) {
-      return addLockDiscoveryProperty(root);
+      return addLockDiscoveryProperty(root, ignoreValue);
     } else if (PROP_RESOURCETYPE.equals(propertyName)) {
-      return addResourceTypeProperty(root);
+      return addResourceTypeProperty(root, ignoreValue);
     } else if (PROP_SOURCE.equals(propertyName)) {
-      return addSourceProperty(root);
+      return addSourceProperty(root, ignoreValue);
     } else if (PROP_SUPPORTED_LOCK.equals(propertyName)) {
-      return addSupportedLockProperty(root);
+      return addSupportedLockProperty(root, ignoreValue);
     } else {
       // handle non-standard properties (keep a little separate)
       if (PROP_QUOTA.equals(propertyName)) {
-        return addQuotaProperty(root);
+        return addQuotaProperty(root, ignoreValue);
       } else if (PROP_QUOTA_USED.equals(propertyName)) {
-        return addQuotaUsedProperty(root);
+        return addQuotaUsedProperty(root, ignoreValue);
       } else if (PROP_QUOTA_AVAILABLE_BYTES.equals(propertyName)) {
-        return addQuotaAvailableBytesProperty(root);
+        return addQuotaAvailableBytesProperty(root, ignoreValue);
       } else if (PROP_QUOTA_USED_BYTES.equals(propertyName)) {
-        return addQuotaUsedBytesProperty(root);
+        return addQuotaUsedBytesProperty(root, ignoreValue);
+      } else {
+        try {
+          Object propertyValue = object.getContent().getAttribute(propertyName);
+          if (null != propertyValue) {
+            if (((String) propertyValue).startsWith("<")) {
+              try {
+                Document property = DocumentHelper.parseText((String) propertyValue);
+                if (ignoreValue) {
+                  property.clearContent();
+                }
+                root.add(property.getRootElement().detach());
+                return true;
+              } catch (DocumentException e) {
+                LogFactory.getLog(getClass()).error("property value unparsable", e);
+                return false;
+              }
+            } else {
+              Element el = root.addElement(propertyName);
+              if (!ignoreValue) {
+                el.addText((String) propertyValue);
+              }
+              return true;
+            }
+
+          }
+        } catch (FileSystemException e) {
+          LogFactory.getLog(this.getClass()).error(String.format("property '%s' is not supported", propertyName), e);
+        }
       }
     }
 
     return false;
   }
 
-  protected boolean addCreationDateProperty(Element root) {
+  protected boolean addCreationDateProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addGetDisplayNameProperty(Element root) {
+  protected boolean addGetDisplayNameProperty(Element root, boolean ignoreValue) {
     Element el = root.addElement(PROP_DISPLAY_NAME);
-    if (!ignoreValues) {
+    if (!ignoreValue) {
       el.addCDATA(object.getName().getBaseName());
     }
     return true;
   }
 
-  protected boolean addGetContentLanguageProperty(Element root) {
+  protected boolean addGetContentLanguageProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addGetContentLengthProperty(Element root) {
+  protected boolean addGetContentLengthProperty(Element root, boolean ignoreValue) {
     try {
       Element el = root.addElement(PROP_GET_CONTENT_LENGTH);
-      if (!ignoreValues) {
+      if (!ignoreValue) {
         el.addText("" + object.getContent().getSize());
       }
       return true;
@@ -166,7 +176,7 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  protected boolean addGetContentTypeProperty(Element root) {
+  protected boolean addGetContentTypeProperty(Element root, boolean ignoreValue) {
     try {
       String contentType = object.getContent().getContentInfo().getContentType();
       if (null == contentType || "".equals(contentType)) {
@@ -174,7 +184,7 @@ public class DavResource extends AbstractDavResource {
       }
 
       Element el = root.addElement(PROP_GET_CONTENT_TYPE);
-      if (!ignoreValues) {
+      if (!ignoreValue) {
         el.addText(contentType);
       }
       return true;
@@ -184,14 +194,14 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  protected boolean addGetETagProperty(Element root) {
+  protected boolean addGetETagProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addGetLastModifiedProperty(Element root) {
+  protected boolean addGetLastModifiedProperty(Element root, boolean ignoreValue) {
     try {
       Element el = root.addElement(PROP_GET_LAST_MODIFIED);
-      if (!ignoreValues) {
+      if (!ignoreValue) {
         el.addText(Util.getDateString(object.getContent().getLastModifiedTime()));
       }
       return true;
@@ -201,37 +211,37 @@ public class DavResource extends AbstractDavResource {
     }
   }
 
-  protected boolean addLockDiscoveryProperty(Element root) {
+  protected boolean addLockDiscoveryProperty(Element root, boolean ignoreValue) {
     Element lockdiscoveryEl = root.addElement(PROP_LOCK_DISCOVERY);
     try {
       List<Lock> locks = LockManager.getInstance().discoverLock(object);
       if (locks != null && !locks.isEmpty()) {
         for (Lock lock : locks) {
-          if (lock != null && !ignoreValues) {
+          if (lock != null && !ignoreValue) {
             lock.serializeToXml(lockdiscoveryEl);
           }
         }
       }
       return true;
     } catch (FileSystemException e) {
-      e.printStackTrace();
       root.remove(lockdiscoveryEl);
+      e.printStackTrace();
       return false;
     }
   }
 
-  protected boolean addResourceTypeProperty(Element root) {
+  protected boolean addResourceTypeProperty(Element root, boolean ignoreValue) {
     root.addElement(PROP_RESOURCETYPE);
     return true;
   }
 
-  protected boolean addSourceProperty(Element root) {
+  protected boolean addSourceProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addSupportedLockProperty(Element root) {
+  protected boolean addSupportedLockProperty(Element root, boolean ignoreValue) {
     Element supportedlockEl = root.addElement(PROP_SUPPORTED_LOCK);
-    if (!ignoreValues) {
+    if (!ignoreValue) {
       Element exclLockentryEl = supportedlockEl.addElement("lockentry");
       exclLockentryEl.addElement("lockscope").addElement("exclusive");
       exclLockentryEl.addElement("locktype").addElement("write");
@@ -243,19 +253,19 @@ public class DavResource extends AbstractDavResource {
     return true;
   }
 
-  protected boolean addQuotaProperty(Element root) {
+  protected boolean addQuotaProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addQuotaUsedProperty(Element root) {
+  protected boolean addQuotaUsedProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addQuotaAvailableBytesProperty(Element root) {
+  protected boolean addQuotaAvailableBytesProperty(Element root, boolean ignoreValue) {
     return false;
   }
 
-  protected boolean addQuotaUsedBytesProperty(Element root) {
+  protected boolean addQuotaUsedBytesProperty(Element root, boolean ignoreValue) {
     return false;
   }
 }

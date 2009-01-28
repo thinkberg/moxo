@@ -21,9 +21,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
+import org.dom4j.Node;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -146,5 +150,16 @@ public abstract class WebdavHandler {
       }
     }
     return -1;
+  }
+
+  void logXml(Node element) {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    try {
+      XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());
+      xmlWriter.write(element);
+      LogFactory.getLog(this.getClass()).debug(bos.toString());
+    } catch (IOException e) {
+      LogFactory.getLog(this.getClass()).error(e.getMessage());
+    }
   }
 }

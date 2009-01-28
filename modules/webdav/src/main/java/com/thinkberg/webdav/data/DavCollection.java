@@ -30,12 +30,7 @@ public class DavCollection extends DavResource {
     super(object);
   }
 
-
-  public DavCollection(FileObject object, boolean ignoreValues) {
-    super(object, ignoreValues);
-  }
-
-  protected boolean addResourceTypeProperty(Element root) {
+  protected boolean addResourceTypeProperty(Element root, boolean ignoreValue) {
     root.addElement(PROP_RESOURCETYPE).addElement(COLLECTION);
     return true;
   }
@@ -46,7 +41,7 @@ public class DavCollection extends DavResource {
    * @param root the prop element to add to
    * @return true, even though nothing is added
    */
-  protected boolean addGetContentLanguageProperty(Element root) {
+  protected boolean addGetContentLanguageProperty(Element root, boolean ignoreValue) {
     return true;
   }
 
@@ -56,7 +51,7 @@ public class DavCollection extends DavResource {
    * @param root the prop element to add to
    * @return true, even though nothing is added
    */
-  protected boolean addGetContentLengthProperty(Element root) {
+  protected boolean addGetContentLengthProperty(Element root, boolean ignoreValue) {
     return true;
   }
 
@@ -66,27 +61,27 @@ public class DavCollection extends DavResource {
    * @param root the prop element to add to
    * @return true, even though nothing is added
    */
-  protected boolean addGetContentTypeProperty(Element root) {
+  protected boolean addGetContentTypeProperty(Element root, boolean ignoreValue) {
     return true;
   }
 
-  protected boolean addQuotaProperty(Element root) {
+  protected boolean addQuotaProperty(Element root, boolean ignoreValue) {
     root.addElement(PROP_QUOTA).addText("" + Long.MAX_VALUE);
     return true;
   }
 
-  protected boolean addQuotaUsedProperty(Element root) {
+  protected boolean addQuotaUsedProperty(Element root, boolean ignoreValue) {
     // TODO add correct handling of used quota
     root.addElement(PROP_QUOTA_USED).addText("0");
     return true;
   }
 
-  protected boolean addQuotaAvailableBytesProperty(Element root) {
+  protected boolean addQuotaAvailableBytesProperty(Element root, boolean ignoreValue) {
     root.addElement(PROP_QUOTA_AVAILABLE_BYTES).addText(Long.toHexString(Long.MAX_VALUE));
     return true;
   }
 
-  protected boolean addQuotaUsedBytesProperty(Element root) {
+  protected boolean addQuotaUsedBytesProperty(Element root, boolean ignoreValue) {
     // TODO add correct handling of used quota
     root.addElement(PROP_QUOTA_USED_BYTES).addText("0");
     return true;

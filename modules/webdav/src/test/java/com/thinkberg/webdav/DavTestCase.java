@@ -11,8 +11,6 @@ import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
-import java.util.Arrays;
-
 /**
  * Helper class for DAV tests.
  *
@@ -73,8 +71,12 @@ public class DavTestCase extends TestCase {
     Element root = DocumentHelper.createElement("root");
     DavResourceFactory factory = DavResourceFactory.getInstance();
     DavResource davResource = factory.getDavResource(object);
-    davResource.setIgnoreValues(ignoreValues);
-    davResource.serializeToXml(root, Arrays.asList(propertyName));
+
+    Element testPropertyEl = (Element) root.addElement("prop").detach();
+    testPropertyEl.addElement(propertyName);
+
+    davResource.getPropertyValues(root, testPropertyEl);
+
     return root;
   }
 

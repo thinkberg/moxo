@@ -147,7 +147,7 @@ public class LockHandler extends WebdavHandler {
     logXml(propDoc);
   }
 
-  private void logXml(Node element) {
+  protected void logXml(Node element) {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
       XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());

@@ -18,9 +18,7 @@ package com.thinkberg.vfs.s3.jets3t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.vfs.FileName;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileType;
+import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.AbstractFileObject;
 import org.apache.commons.vfs.util.MonitorOutputStream;
 import org.jets3t.service.Constants;
@@ -34,7 +32,10 @@ import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -121,8 +122,44 @@ public class Jets3tFileObject extends AbstractFileObject {
     attached = false;
   }
 
-  protected void doRename(FileObject newfile) throws Exception {
-    super.doRename(newfile);
+  protected void doRename(FileObject targetFileObject) throws Exception {
+    String bucketId = bucket.getName();
+    S3Object targetObject = ((Jets3tFileObject) targetFileObject).object;
+
+    LOG.debug(String.format("move object '%s' to '%s'", getS3Key(), targetObject.getKey()));
+
+    // if this is a folder, then rename all children of the current folder too
+    if (FileType.FOLDER.equals(getType())) {
+      String path = object.getKey();
+      // make sure we add a '/' slash at the end to find children
+      if (!"".equals(path)) {
+        path = path + "/";
+      }
+
+      try {
+        S3Object[] children = service.listObjects(bucket, path, null);
+        LOG.debug(children);
+        String targetName = targetObject.getKey();
+        for (S3Object child : children) {
+          String targetChildName = child.getKey();
+          targetChildName = targetName + targetChildName.substring(object.getKey().length());
+          service.renameObject(bucketId, child.getKey(), new S3Object(bucket, targetChildName));
+        }
+      } catch (S3ServiceException e) {
+        throw new FileSystemException(String.format("can't move children of '%s' to '%s'", object.getKey(), targetObject.getKey()), e);
+      }
+    }
+
+    try {
+      service.renameObject(bucket.getName(), object.getKey(), ((Jets3tFileObject) targetFileObject).object);
+    } catch (S3ServiceException e) {
+      throw new FileSystemException("can't rename  object", e);
+    }
+  }
+
+  @Override
+  public void copyFrom(FileObject file, FileSelector selector) throws FileSystemException {
+    super.copyFrom(file, selector);
   }
 
   protected void doCreateFolder() throws Exception {
@@ -144,6 +181,7 @@ public class Jets3tFileObject extends AbstractFileObject {
 
   protected void doSetLastModifiedTime(final long modtime) throws Exception {
     object.addMetadata(Constants.REST_METADATA_PREFIX + VFS_LAST_MODIFIED_TIME, modtime);
+    service.updateObjectMetadata(bucket.getName(), object);
   }
 
   protected InputStream doGetInputStream() throws Exception {
@@ -172,6 +210,7 @@ public class Jets3tFileObject extends AbstractFileObject {
       protected void onClose() throws IOException {
         try {
           LOG.debug(String.format("sending '%s' to storage (cached=%b)", object.getKey(), cacheFile));
+          LOG.debug(object);
           if (cacheFile != null) {
             FileChannel cacheFc = getCacheFile().getChannel();
             object.setContentLength(cacheFc.size());
@@ -198,27 +237,54 @@ public class Jets3tFileObject extends AbstractFileObject {
     return FileType.FILE;
   }
 
-  protected String[] doListChildren() throws Exception {
+  protected String[] doListChildren() throws FileSystemException {
     String path = object.getKey();
     // make sure we add a '/' slash at the end to find children
     if (!"".equals(path)) {
       path = path + "/";
     }
 
-    S3Object[] children = service.listObjects(bucket, path, "/");
-    String[] childrenNames = new String[children.length];
-    for (int i = 0; i < children.length; i++) {
-      if (!children[i].getKey().equals(path)) {
-        // strip path from name (leave only base name)
-        childrenNames[i] = children[i].getKey().replaceAll("[^/]*//*", "");
+    try {
+      S3Object[] children = service.listObjects(bucket, path, "/");
+      LOG.debug(Arrays.asList(children));
+      LOG.debug(Arrays.asList(children));
+      String[] childrenNames = new String[children.length];
+      for (int i = 0; i < children.length; i++) {
+        if (!children[i].getKey().equals(path)) {
+          // strip path from name (leave only base name)
+          childrenNames[i] = children[i].getKey().replaceAll("[^/]*//*", "");
+        }
       }
-    }
 
-    return childrenNames;
+      return childrenNames;
+    } catch (S3ServiceException e) {
+      throw new FileSystemException(String.format("can't list children of '%s'", path), e);
+    }
   }
 
   protected long doGetContentSize() throws Exception {
     return object.getContentLength();
+  }
+
+  @SuppressWarnings("unchecked")
+  protected Map doGetAttributes() throws Exception {
+    Map metaData = object.getModifiableMetadata();
+    Map attributes = new HashMap<Object, Object>(metaData.size());
+    for (Object key : metaData.keySet()) {
+      if (((String) key).startsWith(Constants.REST_METADATA_PREFIX)) {
+        attributes.put(((String) key).substring(Constants.REST_METADATA_PREFIX.length()), metaData.get(key));
+      } else {
+        attributes.put(key, metaData.get(key));
+      }
+    }
+    LOG.debug(String.format("%s[%s]", object.getKey(), attributes));
+    return attributes;
+  }
+
+  @SuppressWarnings("unchecked")
+  protected void doSetAttribute(String attrName, Object value) throws Exception {
+    object.addMetadata(Constants.REST_METADATA_PREFIX + attrName, value);
+    service.updateObjectMetadata(bucket.getName(), object);
   }
 
   // Utility methods

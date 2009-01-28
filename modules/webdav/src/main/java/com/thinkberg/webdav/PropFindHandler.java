@@ -24,17 +24,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
-import org.dom4j.*;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,25 +44,18 @@ import java.util.List;
  * @version $Id$
  */
 public class PropFindHandler extends WebdavHandler {
-  private static final String TAG_PROP = "prop";
-  private static final String TAG_ALLPROP = "allprop";
-  private static final String TAG_PROPNAMES = "propnames";
   private static final String TAG_MULTISTATUS = "multistatus";
   private static final String TAG_HREF = "href";
   private static final String TAG_RESPONSE = "response";
+
+  private static final String TAG_ALLPROP = "allprop";
+  private static final String TAG_PROPNAMES = "propnames";
+  private static final String TAG_PROP = "prop";
+
+  private static final List<String> VALID_PROPFIND_TAGS = Arrays.asList(
+          TAG_ALLPROP, TAG_PROPNAMES, TAG_PROP
+  );
   private static final Log LOG = LogFactory.getLog(PropFindHandler.class);
-
-  void logXml(Node element) {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    try {
-      XMLWriter xmlWriter = new XMLWriter(bos, OutputFormat.createPrettyPrint());
-      xmlWriter.write(element);
-      LOG.debug(bos.toString());
-    } catch (IOException e) {
-      LOG.error(e.getMessage());
-    }
-  }
-
 
   public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
     SAXReader saxReader = new SAXReader();
@@ -69,46 +64,35 @@ public class PropFindHandler extends WebdavHandler {
       logXml(propDoc);
 
       Element propFindEl = propDoc.getRootElement();
-      Element propEl = (Element) propFindEl.elementIterator().next();
-      String propElName = propEl.getName();
+      for (Object propElObject : propFindEl.elements()) {
+        Element propEl = (Element) propElObject;
+        if (VALID_PROPFIND_TAGS.contains(propEl.getName())) {
+          FileObject object = VFSBackend.resolveFile(request.getPathInfo());
+          if (object.exists()) {
+            // respond as XML encoded multi status
+            response.setContentType("text/xml");
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(SC_MULTI_STATUS);
 
-      List<String> requestedProperties = new ArrayList<String>();
-      boolean ignoreValues = false;
-      if (TAG_PROP.equals(propElName)) {
-        for (Object id : propEl.elements()) {
-          requestedProperties.add(((Element) id).getName());
+            Document multiStatusResponse =
+                    getMultiStatusResponse(object,
+                                           propEl,
+                                           getBaseUrl(request),
+                                           getDepth(request));
+            logXml(multiStatusResponse);
+
+            // write the actual response
+            XMLWriter writer = new XMLWriter(response.getWriter(), OutputFormat.createCompactFormat());
+            writer.write(multiStatusResponse);
+            writer.flush();
+            writer.close();
+
+          } else {
+            LOG.error(object.getName().getPath() + " NOT FOUND");
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+          }
+          break;
         }
-      } else if (TAG_ALLPROP.equals(propElName)) {
-        requestedProperties = DavResource.ALL_PROPERTIES;
-      } else if (TAG_PROPNAMES.equals(propElName)) {
-        requestedProperties = DavResource.ALL_PROPERTIES;
-        ignoreValues = true;
-      }
-
-      FileObject object = VFSBackend.resolveFile(request.getPathInfo());
-      if (object.exists()) {
-        // respond as XML encoded multi status
-        response.setContentType("text/xml");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(SC_MULTI_STATUS);
-
-        Document multiStatusResponse =
-                getMultiStatusRespons(object,
-                                      requestedProperties,
-                                      getBaseUrl(request),
-                                      getDepth(request),
-                                      ignoreValues);
-        logXml(multiStatusResponse);
-
-        // write the actual response
-        XMLWriter writer = new XMLWriter(response.getWriter(), OutputFormat.createCompactFormat());
-        writer.write(multiStatusResponse);
-        writer.flush();
-        writer.close();
-
-      } else {
-        LOG.error(object.getName().getPath() + " NOT FOUND");
-        response.sendError(HttpServletResponse.SC_NOT_FOUND);
       }
     } catch (DocumentException e) {
       LOG.error("invalid request: " + e.getMessage());
@@ -116,12 +100,10 @@ public class PropFindHandler extends WebdavHandler {
     }
   }
 
-  @SuppressWarnings({"ConstantConditions"})
-  private Document getMultiStatusRespons(FileObject object,
-                                         List<String> requestedProperties,
-                                         URL baseUrl,
-                                         int depth,
-                                         boolean ignoreValues) throws FileSystemException {
+  private Document getMultiStatusResponse(FileObject object,
+                                          Element propEl,
+                                          URL baseUrl,
+                                          int depth) throws FileSystemException {
     Document propDoc = DocumentHelper.createDocument();
     propDoc.setXMLEncoding("UTF-8");
 
@@ -131,14 +113,12 @@ public class PropFindHandler extends WebdavHandler {
       Element responseEl = multiStatus.addElement(TAG_RESPONSE);
       try {
         URL url = new URL(baseUrl, URLEncoder.encode(child.getName().getPath(), "UTF-8"));
-        LOG.debug(url);
         responseEl.addElement(TAG_HREF).addText(url.toExternalForm());
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("can't set href in response", e);
       }
       DavResource resource = DavResourceFactory.getInstance().getDavResource(child);
-      resource.setIgnoreValues(ignoreValues);
-      resource.serializeToXml(responseEl, requestedProperties);
+      resource.getPropertyValues(responseEl, propEl);
     }
     return propDoc;
   }

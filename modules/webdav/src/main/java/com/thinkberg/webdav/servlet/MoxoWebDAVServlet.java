@@ -24,7 +24,6 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemOptions;
 import org.apache.commons.vfs.auth.StaticUserAuthenticator;
 import org.apache.commons.vfs.impl.DefaultFileSystemConfigBuilder;
-import org.mortbay.jetty.Response;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -113,8 +112,6 @@ public class MoxoWebDAVServlet extends HttpServlet {
     } else {
       response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
-    Response jettyResponse = ((Response) response);
-    String reason = jettyResponse.getReason();
-    LOG.debug(String.format("<< %s (%d%s)", request.getMethod(), jettyResponse.getStatus(), reason != null ? ": " + reason : ""));
+    LOG.debug(String.format("<< %s (%s)", request.getMethod(), response.toString().replaceAll("[\\r\\n]+", "")));
   }
 }
