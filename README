@@ -7,8 +7,8 @@ This is a first go on two issues:
 a) a WebDAV server based on apache-commons-vfs
 b) an Amazon S3 provider backend for apache-commons-vfs
 
-The WebDAV server is semi-complete in a sense that it works well for most tests in the
-listmus test suite except for property handling which is virtually non-existing.
+The WebDAV server is almost complete. Right now only two tests of the complete webdav
+litmus test are failing (one is a warning).
 
 The VFS backend is started and provides write access. You can already use it with the
 MacOS X Finder to copy, move and delete etc. files on Amazon S3. Some commands may time out
@@ -24,9 +24,9 @@ of tweaking is necessary, unless you use IntelliJ IDEA and maven idea:idea to cr
 an IDEA project file.
 
 To run either the MoxoJettyRunner or the MoxoTest you need to include the src/main/resources
-directory in your classpath. Also copy the file moxo.template.properties and edit it to
-include your Amazon S3 access information as well as the bucket to use. Right now the bucket
-must already exist and contain files uploaded using the Uploader or Synchronize from Jets3t.
+directory in your classpath. Edit the jetty.xml file  to include your Amazon S3 access
+information as well as the bucket to use. The bucket will be created from the S3 url you
+are providing.
 
 Edit jetty.xml or copy it to a local file and point to it using the following command:
 
@@ -37,7 +37,6 @@ TODO:
 - Create an executable JAR with all required libraries. The Main is already prepared to do
   that but I have not yet fully understood how to get maven to package the jars right next
   to the compiled classes.
-- WebDAV property handling
 - S3 ACL support
-- separated jar packages for the vfs backend and the dav frontend
+- separate the S3 backend even further by introducing a caching system to speed up operation
 
