@@ -157,7 +157,7 @@ public abstract class AbstractDavResource {
       for (Object propertyElObject : requestedProperties) {
         Element propEl = (Element) propertyElObject;
         final String nameSpace = propEl.getNamespaceURI();
-        if (!getPropertyValue(okPropEl, getFQName(nameSpace, propEl.getQualifiedName()), false)) {
+        if (!getPropertyValue(okPropEl, getFQName(nameSpace, propEl.getName()), false)) {
           failPropEl.addElement(propEl.getQName());
         }
       }

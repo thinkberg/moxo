@@ -47,7 +47,7 @@ public class DavResource extends AbstractDavResource {
 
     if (!ALL_PROPERTIES.contains(propertyEl.getName())) {
       final String nameSpace = propertyEl.getNamespaceURI();
-      final String attributeName = getFQName(nameSpace, propertyEl.getQualifiedName());
+      final String attributeName = getFQName(nameSpace, propertyEl.getName());
       try {
         FileContent objectContent = object.getContent();
         final String command = propertyEl.getParent().getParent().getName();
