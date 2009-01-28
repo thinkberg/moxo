@@ -39,4 +39,6 @@ TODO:
   to the compiled classes.
 - S3 ACL support
 - separate the S3 backend even further by introducing a caching system to speed up operation
+- add authentication support to the DAV server
+- add encryption support to the S3 backend for security and safety
 

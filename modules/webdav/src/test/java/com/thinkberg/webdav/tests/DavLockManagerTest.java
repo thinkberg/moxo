@@ -147,24 +147,4 @@ public class DavLockManagerTest extends DavTestCase {
     assertFalse("complex condition with bogus eTag should fail",
                 LockManager.getInstance().evaluateCondition(aFile, condition).result);
   }
-
-
-//  assertFalse(lockManager.evaluateCondition(aFile, "</resource1> (<urn:uuid:181d4fae-7d8c-11d0-a765-00a0c91e6bf2> [W/\"A weak ETag\"]) ([\"strong ETag\"])");
-//  lockManager.evaluateCondition(aFile, "(<urn:uuid:181d4fae-7d8c-11d0-a765-00a0c91e6bf2>) (Not <DAV:no-lock>)");
-//  lockManager.evaluateCondition(aFile, "(Not <urn:uuid:181d4fae-7d8c-11d0-a765-00a0c91e6bf2> <urn:uuid:58f202ac-22cf-11d1-b12d-002035b29092>)");
-//  lockManager.evaluateCondition(aFile, "</specs/rfc2518.doc> ([\"4217\"])");
-//  lockManager.evaluateCondition(aFile, "</specs/rfc2518.doc> (Not [\"4217\"])");
-//  lockManager.evaluateCondition(aFile, "(<urn:uuid:181d4fae-7d8c-11d0-a765-00a0c91e6bf2>) (Not <DAV:no-lock>) </specs/rfc2518.doc> (Not [\"4217\"])");
-//  lockManager.evaluateCondition(aFile, "(<opaquelocktoken:10a098> [10a198]) (Not <DAV:no-lock> [10a198])");
-
-//  public void testLockConditionRequiredException() {
-//    Lock sharedLock = new Lock(aFile, Lock.WRITE, Lock.SHARED, OWNER_STR, 0, 3600);
-//    try {
-//      LockManager.getInstance().acquireLock(sharedLock);
-//      LockManager.getInstance().checkCondition(aFile, null);
-//      assertTrue("checkCondition() should fail", false);
-//    } catch (Exception e) {
-//      assertEquals(LockConditionRequiredException.class, e.getClass());
-//    }
-//  }
 }
