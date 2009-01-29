@@ -7,9 +7,9 @@
     <version>1.0-SNAPSHOT</version>
     <name>Moxo S3 DAV Proxy</name>
     <modules>
+        <module>modules/server</module>
         <module>modules/webdav</module>
         <module>modules/vfs.s3</module>
-        <module>modules/server</module>
     </modules>
     <url>http://thinkberg.com</url>
 </project>
