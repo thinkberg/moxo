@@ -30,10 +30,6 @@ public class DavResourceTest extends DavTestCase {
     testPropertyValue(aFile, DavResource.PROP_DISPLAY_NAME, aFile.getName().getBaseName());
   }
 
-  public void testFileDisplayNameWithoutValue() throws FileSystemException {
-    testPropertyNoValue(aFile, DavResource.PROP_DISPLAY_NAME);
-  }
-
   public void testFileResourceTypeNotMissing() throws FileSystemException {
     Element root = serializeDavResource(aFile, DavResource.PROP_RESOURCETYPE);
     assertNull(selectMissingProperty(root, DavResource.PROP_RESOURCETYPE));
