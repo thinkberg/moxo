@@ -1,0 +1,5 @@
+Amazon AWS S3 Provider for Apache commons-vfs
+(c) 2007, 2009 Matthias L. Jugel. See LICENSE for details.
+http://thinkberg.com
+
+This is a VFS provider for Amazon S3.

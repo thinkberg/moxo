@@ -1,0 +1,19 @@
+=========================================================================
+==  NOTICE file corresponding to section 4(d) of the Apache License,   ==
+==  Version 2.0.                                                       ==
+=========================================================================
+
+WebDAV Servlet Implementation using Apache commons-vfs
+Copyright 2007, 2009 Matthias L. Jugel.
+
+This product includes software developed at
+
+  Many Ideas (for WebDAV) taken from s3DAV (c) Pierre Carion
+  http://www.carion.org/s3dav/
+
+  The Apache Software Foundation (http://www.apache.org/).
+  MetaStuff, Ltd. (DOM4J, http://dom4j.org).
+  James Murty (jetst3, http://http://jets3t.s3.amazonaws.com)
+
+
+

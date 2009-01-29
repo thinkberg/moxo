@@ -1,0 +1,12 @@
+WebDAV Servlet Implementation using Apache commons-vfs
+(c) 2007, 2009 Matthias L. Jugel. See LICENSE for details.
+http://thinkberg.com
+
+This is a WebDAV implementation that can be integrated into applications or
+web applications (using the servlet). It has a pluggable backend architecture
+provided by commons-vfs. Any provider usable by commons-vfs can be used.
+
+This implementation has been written to support the Moxo S3 WebDAV Proxy.
+Only commons-vfs providers that support file system attributes will pass
+the WebDAV Litmus test fully as it requires property handling (storing
+arbitrary attributes of files).
