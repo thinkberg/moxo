@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.thinkberg</groupId>
+    <artifactId>moxo-server</artifactId>
+    <name>Moxo Server</name>
+    <version>1.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+            <version>6.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkberg</groupId>
+            <artifactId>webdav</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkberg</groupId>
+            <artifactId>vfs.s3</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <verbose>true</verbose>
+                    <fork>true</fork>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <!--
+              mvn test
+              Documentation: http://maven.apache.org/plugins/maven-surefire-plugin/
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/MoxoTest.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!--
+              jar
+              mvn package
+              Documentation: http://maven.apache.org/plugins/maven-jar-plugin/
+            -->
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-jar-plugin</artifactId>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<phase>package</phase>-->
+            <!--<goals>-->
+            <!--<goal>jar</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<classifier>client</classifier>-->
+            <!--<includes>-->
+            <!--<include>**/client/*</include>-->
+            <!--<include>**/servlet/*</include>-->
+            <!--<include>barcode-client.properties</include>-->
+            <!--<include>log4j.properties</include>-->
+            <!--<include>images/*</include>-->
+            <!--<include>templates/*</include>-->
+            <!--</includes>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.thinkberg.moxo.Main</mainClass>
+                                    <addClasspath>true</addClasspath>
+                                </manifest>
+                            </archive>
+                            <includes>
+                                <include>**/moxo/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
