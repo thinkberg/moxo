@@ -25,6 +25,7 @@ import org.apache.commons.vfs.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 /**
  * @author Matthias L. Jugel
@@ -187,12 +188,14 @@ public class S3FileProviderTest extends S3TestCase {
 
   public void testCopyShallowFolder() throws FileSystemException {
     FileObject origFolder = ROOT.resolveFile(FOLDER);
+    origFolder.delete(ALL_FILE_SELECTOR);
     origFolder.createFolder();
 
     origFolder.resolveFile("file.0").createFile();
     origFolder.resolveFile("file.1").createFile();
     origFolder.resolveFile("file.2").createFile();
 
+    System.out.println(Arrays.asList(origFolder.getChildren()));
     assertEquals(3, origFolder.getChildren().length);
 
     FileObject destFolder = ROOT.resolveFile(FOLDER + "_dest");

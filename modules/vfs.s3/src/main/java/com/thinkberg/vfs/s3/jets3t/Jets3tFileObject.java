@@ -32,7 +32,6 @@ import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -138,7 +137,6 @@ public class Jets3tFileObject extends AbstractFileObject {
 
       try {
         S3Object[] children = service.listObjects(bucket, path, null);
-        LOG.debug(children);
         String targetName = targetObject.getKey();
         for (S3Object child : children) {
           String targetChildName = child.getKey();
@@ -157,8 +155,8 @@ public class Jets3tFileObject extends AbstractFileObject {
     }
   }
 
-  @Override
   public void copyFrom(FileObject file, FileSelector selector) throws FileSystemException {
+    // TODO must implement to support attribute copy
     super.copyFrom(file, selector);
   }
 
@@ -210,7 +208,6 @@ public class Jets3tFileObject extends AbstractFileObject {
       protected void onClose() throws IOException {
         try {
           LOG.debug(String.format("sending '%s' to storage (cached=%b)", object.getKey(), cacheFile));
-          LOG.debug(object);
           if (cacheFile != null) {
             FileChannel cacheFc = getCacheFile().getChannel();
             object.setContentLength(cacheFc.size());
@@ -246,8 +243,6 @@ public class Jets3tFileObject extends AbstractFileObject {
 
     try {
       S3Object[] children = service.listObjects(bucket, path, "/");
-      LOG.debug(Arrays.asList(children));
-      LOG.debug(Arrays.asList(children));
       String[] childrenNames = new String[children.length];
       for (int i = 0; i < children.length; i++) {
         if (!children[i].getKey().equals(path)) {

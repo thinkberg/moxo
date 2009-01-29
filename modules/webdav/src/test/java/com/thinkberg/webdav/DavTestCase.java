@@ -43,7 +43,7 @@ public class DavTestCase extends TestCase {
   }
 
   protected void testPropertyNoValue(FileObject object, String propertyName) throws FileSystemException {
-    Element root = serializeDavResource(object, propertyName, true);
+    Element root = serializeDavResource(object, propertyName);
     assertEquals(EMPTY, selectExistingPropertyValue(root, propertyName));
   }
 
@@ -64,10 +64,6 @@ public class DavTestCase extends TestCase {
   }
 
   protected Element serializeDavResource(FileObject object, String propertyName) throws FileSystemException {
-    return serializeDavResource(object, propertyName, false);
-  }
-
-  protected Element serializeDavResource(FileObject object, String propertyName, boolean ignoreValues) throws FileSystemException {
     Element root = DocumentHelper.createElement("root");
     DavResourceFactory factory = DavResourceFactory.getInstance();
     DavResource davResource = factory.getDavResource(object);
