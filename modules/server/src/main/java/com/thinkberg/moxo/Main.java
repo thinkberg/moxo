@@ -72,7 +72,6 @@ public class Main {
   private static URL[] initClassPath() {
     List<URL> urlArray = new ArrayList<URL>();
     InputStream manifestIn = null;
-    InputStream jarIn = null;
     try {
       manifestIn = location.openStream();
       JarInputStream launcherJarIs = new JarInputStream(manifestIn);
@@ -90,6 +89,7 @@ public class Main {
             }
           } catch (IOException e) {
             System.err.println("ignored '" + jarEntry.getName() + "'");
+            System.err.println(e.getMessage());
           }
         }
       }
@@ -101,11 +101,7 @@ public class Main {
       try {
         manifestIn.close();
       } catch (Throwable ignore) {
-        // ignore errors
-      }
-      try {
-        jarIn.close();
-      } catch (Throwable ignore) {
+        ignore.printStackTrace();
         // ignore errors
       }
     }
@@ -146,7 +142,8 @@ public class Main {
    * @throws IOException if the extraction was not possible
    */
   private static URL extract(URL resource) throws IOException {
-    File f = File.createTempFile("launcher_", ".jar");
+    String name = new File(resource.getFile()).getName();
+    File f = File.createTempFile("launcher_" + name + "_", ".jar");
     f.deleteOnExit();
     if (f.getParentFile() != null) {
       f.getParentFile().mkdirs();
