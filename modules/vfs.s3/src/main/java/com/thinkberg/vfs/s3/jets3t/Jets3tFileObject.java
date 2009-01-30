@@ -41,6 +41,7 @@ import java.util.Map;
  * Implementation of the virtual S3 file system object using the Jets3t library.
  *
  * @author Matthias L. Jugel
+ * @version $Revision$
  */
 public class Jets3tFileObject extends AbstractFileObject {
   private static final Log LOG = LogFactory.getLog(Jets3tFileObject.class);
