@@ -32,7 +32,10 @@ public class MoxoJettyRunner {
   private static final String CONF_JETTY_XML = "/jetty.xml";
 
   public static void main(String[] args) {
-    System.out.println("Moxo S3 DAV Proxy (c) 2007 Matthias L. Jugel");
+    System.out.println("Moxo S3 DAV Proxy");
+    System.out.println("(c) 2007, 2009 Matthias L. Jugel. All Rights Reserved.");
+    System.out.println("See LICENSE for details. http://thinkberg.com/");
+
 
     // set encoding of the JVM and make sure Jetty decodes URIs correctly
     System.setProperty("file.encoding", "UTF-8");
