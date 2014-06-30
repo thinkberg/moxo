@@ -17,8 +17,6 @@ client is willing to wait.
 
 INFO:
 
-Subversion: http://thinkberg.com/svn/moxo/trunk
-
 The maven build process is not yet fully completed, so to get this running a little bit
 of tweaking is necessary, unless you use IntelliJ IDEA and maven idea:idea to create
 an IDEA project file.
